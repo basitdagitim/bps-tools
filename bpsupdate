@@ -1,0 +1,3 @@
+#!/bin/sh
+./indirgentoo /tmp/index.lst https://bayramkarahan.github.io/distro-binary-package/index.lst
+
