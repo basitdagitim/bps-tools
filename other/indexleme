@@ -8,3 +8,4 @@ find . |
     		echo ${file_name:1}>>index.txt
 	fi
     done
+    
