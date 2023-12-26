@@ -26,7 +26,7 @@ fi
 mkdir -p /tmp/bps
 mkdir -p /tmp/bps/kur
 rm -rf /tmp/bps/kur/*
-./indirgentoo /tmp/bps/kur/${name}-${version}.tar.gz https://github.com/bayramkarahan/distro-binary-package/raw/master/${name}/${name}-${version}.bps
+./indirgentoo /tmp/bps/kur/${name}-${version}.tar.gz https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps
 mkdir -p /var/lib/bps
 cd /tmp/bps/kur/
 
@@ -39,6 +39,6 @@ tar -xf rootfs.tar.xz -C rootfs
 cp -prfv rootfs/* $ROOTFS/
 
 #name version depends /var/bps/index.lst eklenmesi
-echo "name=\"${name}\":"version=\"${version}\":"depends=\"${depends}\"">>var/bps/index.lst
+#echo "name=\"${name}\":"version=\"${version}\":"depends=\"${depends}\"">>var/bps/index.lst
 #paket içinde gelen paket dosyalarının dosya ve dizin yapısını tutan file index dosyanının /var/bps/ konumuna kopyalanması
-cp file.lst /var/bps/${name}-${version}.lst
+#cp file.lst /var/bps/${name}-${version}.lst

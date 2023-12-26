@@ -1,7 +1,7 @@
 #!/bin/bash
 
 
-rootfs="$HOME/distro/initrd"
+rootfs="$HOME/distro/rootfs"
 rm -rf $HOME/distro/iso
 rm -rf $rootfs
 bash ./initrdnew
@@ -19,11 +19,12 @@ mkdir -p $rootfs
 ./bpskur base-file $rootfs/
 ./bpskur grub $rootfs/
 ./bpskur e2fsprogs $rootfs/
+
 ./bpskur xz $rootfs/
 
 ./bpskur curl $rootfs/
 ./bpskur openssl $rootfs/
-
+./bpskur initramfs-tools $rootfs/
 #****************modul yukleme*************************
 #cd $HOME/distro/linux-6.6.2
 #make bzImage modules
@@ -114,8 +115,10 @@ mkdir -p $HOME/distro/iso/live || true
 
 
 #squashfs dosyası oluşturuluyor iso dzinine kopyalanıyor
-#cp -prfv $HOME/distro/iso/boot /$HOME/distro/initrd/
-cd $HOME/distro/
+#cp /boot/vmlinuz-$(uname -r) $rootfs/bvmlinuz #sistemde kullandığım kerneli kopyaladım istenirde kernel derlenebilir.
+#cp /boot/initrd.img* $rootfs/binitrd.img #oluşturduğumuz **initrd.img** dosyamızı taşıyoruz
+
+#cd $HOME/distro/
 mksquashfs $rootfs $HOME/distro/filesystem.squashfs -comp xz -wildcards
 mv $HOME/distro/filesystem.squashfs $HOME/distro/iso/live/filesystem.squashfs
 
