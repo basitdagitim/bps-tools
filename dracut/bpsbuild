@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+version="059"
+name="dracut"
+depends=""
+description="initramfs  generate sağlayan paket"
+source="https://github.com/dracutdevs/dracut/archive/refs/tags/059.tar.gz"
+groups="sys.fs"
+setup()
+{	
+	cd $SOURCEDIR
+	../${name}-${version}/configure --prefix=/usr 
+}
+build()
+{
+	cd $SOURCEDIR
+	make
+}
+package()
+{
+	make install DESTDIR=$DESTDIR
+}
+
+

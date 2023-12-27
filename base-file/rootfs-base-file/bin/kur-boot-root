@@ -13,7 +13,7 @@ mkdir -p cdrom
 
 
 e2fsck -f /dev/sda2
-tune2fs -O ^metadata_csum /dev/sda2
+yes |tune2fs -O ^metadata_csum /dev/sda2
 mount -t iso9660 -o loop /dev/sr0 cdrom
 mount -t squashfs -o loop /cdrom/live/filesystem.squashfs /kaynak
 mount /dev/sda2 /hedef
