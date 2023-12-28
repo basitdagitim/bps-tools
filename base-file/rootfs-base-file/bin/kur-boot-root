@@ -3,8 +3,8 @@ DISK=sda
 modprobe loop
 modprobe ext4
 
-mkfs.ext4 /dev/sda2
-mkfs.vfat /dev/sda1
+yes |mkfs.ext4 /dev/sda2
+yes |mkfs.vfat /dev/sda1
 cd /
 
 mkdir -p hedef
@@ -12,7 +12,7 @@ mkdir -p kaynak
 mkdir -p cdrom
 
 
-e2fsck -f /dev/sda2
+yes |e2fsck -f /dev/sda2
 yes |tune2fs -O ^metadata_csum /dev/sda2
 mount -t iso9660 -o loop /dev/sr0 cdrom
 mount -t squashfs -o loop /cdrom/live/filesystem.squashfs /kaynak

@@ -10,8 +10,8 @@ groups="app.arch"
 setup()
 {
 
-     ../${name}-${version}/configure --prefix=/usr \
-    	--libdir=/usr/lib64 \
+     ../${name}-${version}/configure --prefix=/ \
+    	--libdir=/lib \
 	    --enable-shared \
 	    --enable-static \
         --enable-pcre2-16 \

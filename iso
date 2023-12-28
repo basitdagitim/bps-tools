@@ -19,6 +19,7 @@ mkdir -p $rootfs
 ./bpskur base-file $rootfs/
 ./bpskur grub $rootfs/
 ./bpskur e2fsprogs $rootfs/
+./bpskur libarchive $rootfs/
 
 ./bpskur xz $rootfs/
 
@@ -26,7 +27,6 @@ mkdir -p $rootfs
 ./bpskur openssl $rootfs/
 ./bpskur initramfs-tools $rootfs/
 ./bpskur \gzip $rootfs/
-./bpskur dracut $rootfs/
 
 ./bpskur coreutils $rootfs/
 ./bpskur acl $rootfs/
