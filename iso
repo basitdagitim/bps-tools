@@ -39,6 +39,9 @@ mkdir -p $rootfs
 ./bpskur mcstrans $rootfs/
 
 
+./bpskur attr $rootfs/
+./bpskur pcre2 $rootfs/
+
 #****************modul yukleme*************************
 #cd $HOME/distro/linux-6.6.2
 #make bzImage modules
