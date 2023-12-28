@@ -7,8 +7,8 @@ mkdir -p $boot
 mkdir -p $boot/bin
 ./bpsupdate
 ./bpskur glibc $boot/
-./bpskur readline $boot/
-./bpskur ncurses $boot/
+#./bpskur readline $boot/
+#./bpskur ncurses $boot/
 ./bpskur busybox $boot/
 ./bpskur kmod $boot/
 ./bpskur eudev $boot/
