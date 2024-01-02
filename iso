@@ -41,6 +41,8 @@ mkdir -p $rootfs
 
 ./bpskur attr $rootfs/
 ./bpskur pcre2 $rootfs/
+./bpskur findutils $rootfs/
+
 
 #****************modul yukleme*************************
 #cd $HOME/distro/linux-6.6.2
@@ -48,35 +50,11 @@ mkdir -p $rootfs
 #INSTALL_MOD_PATH="$HOME/distro/initrd" make modules_install
 #/sbin/depmod --all --basedir=initrd #modul indeksi oluşturluyor
 mkdir -p $rootfs/lib/modules/
-mkdir -p $rootfs/lib/modules/$(uname -r)
-mkdir -p $rootfs/lib/modules/$(uname -r)/moduller
-#moduller {cdrom,loop,md,ahci,block,ata,firewire,sd,scsi,message,pcmcia,virtio,host}
-#moduller {storage,crypto,fs,lib,dm-snapshot,overlay,isofs,squashfs,hfsplus,sr_mod,dm_mod}
-#moduller {nls,nls_utf8,overlayfs,udf,ext4,usb-storage}
+#mkdir -p $rootfs/lib/modules/$(uname -r)
+#mkdir -p $rootfs/lib/modules/$(uname -r)/moduller
 
-#for directory in {lib,fs,crypto,net} \
-#   drivers/{usb,block,ata,md,firewire} \
-#    drivers/{scsi,message,pcmcia,virtio} ;
-#   	do
-    	#echo ${directory}
-    	#    misc \
-#  find /lib/modules/$(uname -r)/kernel/${directory}/ -type f \
-#      -exec install {} $HOME/distro/initrd/lib/modules/$(uname -r)/moduller/ \;
-#	done
-cp /lib/modules/$(uname -r)/kernel/* -rf $rootfs/lib/modules/$(uname -r)/moduller/ #sistemden kopyalandı..
-
+cp -rpf /lib/modules/*  $rootfs/lib/modules/ #sistemden kopyalandı..
 /sbin/depmod --all --basedir=$rootfs #modul indeksi oluşturluyor
-#*****************kurallar yüklenecek*************************
-##mkdir -p $HOME/distro/initrd/etc/udev/
-##mkdir -p $HOME/distro/initrd/lib/udev/
-##cp /etc/udev/rules.d -rf  $HOME/distro/initrd/etc/udev/
-##cp /lib/udev/rules.d -rf  $HOME/distro/initrd/lib/udev/
-#rm -rf $HOME/distro/initrd/lib/udev/rules.d/80-drivers.rules
-#rm -rf $HOME/distro/initrd/lib/udev/rules.d/80-debian-compat.rules
-#rm -rf $HOME/distro/initrd/lib/udev/rules.d/80-net-setup-link.rules
-#rm -rf $HOME/distro/initrd/lib/udev/rules.d/90-nm-thunderbolt.rules
-#rm -rf $HOME/distro/initrd/lib/udev/rules.d/73-seat-late.rules
-
 #**************************init dosyası oluşturuluyor***********************************
 
 cat >  $rootfs/init << EOF

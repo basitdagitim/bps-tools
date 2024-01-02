@@ -11,7 +11,7 @@ setup()
 
      ../${name}-${version}/configure --prefix=/usr \
         --sysconfdir=/etc \
-        --libdir=/usr/lib64
+        --libdir=/lib
 }
 build()
 {

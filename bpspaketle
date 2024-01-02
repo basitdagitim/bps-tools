@@ -34,7 +34,11 @@ initsetup()
 		if [ "${filetype}" == "???" ]; then echo "****dosya zip ile sıkıştırılmış****"; unzip  ${dowloadfile}; fi
 		#*********************************************************************************************************
 		director=$(find ./* -maxdepth 0 -type d)
-		if [ "${director}" != "./${name}-${version}" ]; then mv $director ${name}-${version}; fi
+		if [ "${director}" != "./${name}-${version}" ]; 
+		then 
+		mv ${name}-${version} source-${name}-${version}
+		mv $director ${name}-${version}; 
+		fi
 	fi
 	mkdir -p build-${name}-${version}
 	mkdir -p rootfs-${name}-${version}
