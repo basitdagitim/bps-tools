@@ -7,8 +7,8 @@ mkdir -p $boot
 mkdir -p $boot/bin
 ./bpsupdate
 ./bpskur glibc $boot/
-#./bpskur readline $boot/
-#./bpskur ncurses $boot/
+./bpskur readline $boot/
+./bpskur ncurses $boot/
 ./bpskur busybox $boot/
 ./bpskur kmod $boot/
 ./bpskur eudev $boot/
@@ -24,8 +24,7 @@ mkdir -p $boot/bin
 #INSTALL_MOD_PATH="$HOME/distro/initrd" make modules_install
 #/sbin/depmod --all --basedir=initrd #modul indeksi oluşturluyor
 mkdir -p $boot/lib/modules/
-mkdir -p $boot/lib/modules/$(uname -r)
-mkdir -p $boot/lib/modules/$(uname -r)/moduller
+
 #moduller {cdrom,loop,md,ahci,block,ata,firewire,sd,scsi,message,pcmcia,virtio,host}
 #moduller {storage,crypto,fs,lib,dm-snapshot,overlay,isofs,squashfs,hfsplus,sr_mod,dm_mod}
 #moduller {nls,nls_utf8,overlayfs,udf,ext4,usb-storage}
@@ -40,7 +39,7 @@ mkdir -p $boot/lib/modules/$(uname -r)/moduller
 #      -exec install {} $HOME/distro/initrd/lib/modules/$(uname -r)/moduller/ \;
 #	done
 #cp -prvf $HOME/boot/initrd/lib/modules/$(uname -r)/kernel/* $boot/lib/modules/$(uname -r)/moduller/ #sistemden kopyalandı..
-cp /lib/modules/$(uname -r)/kernel/* -prvf $boot/lib/modules/$(uname -r)/moduller/ #sistemden kopyalandı..
+cp -rpf /lib/modules/*  $boot/lib/modules/  #sistemden kopyalandı..
 /sbin/depmod --all --basedir=$boot #modul indeksi oluşturluyor
 #*****************kurallar yüklenecek*************************
 mkdir -p $boot/etc/udev/
