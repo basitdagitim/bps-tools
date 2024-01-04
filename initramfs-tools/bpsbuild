@@ -12,8 +12,8 @@ setup()
 	mkdir -p /tmp/bps/build/patches
 	cp ${dizin}/${paket}/patches/* /tmp/bps/build/patches/
 	cp ${dizin}/${paket}/initramfs-tools.sysconf /tmp/bps/build/initramfs-tools.sysconf
-	cp ${dizin}/${paket}/busybox.initramfs /tmp/bps/build/busybox.initramfs
-	cp ${dizin}/${paket}/fsck /tmp/bps/build/fsck
+	cp ${dizin}/${paket}/zzz-busybox /tmp/bps/build/zzz-busybox
+	#cp ${dizin}/${paket}/fsck /tmp/bps/build/fsck
 	cp ${dizin}/${paket}/modules /tmp/bps/build/modules
 
 	
@@ -46,8 +46,8 @@ package()
     	install ../initramfs-tools.sysconf ${DESTDIR}/etc/sysconf.d/initramfs-tools
     	
 
-    	install ../busybox.initramfs ${DESTDIR}/usr/share/initramfs-tools/hooks/
-    	install ../fsck ${DESTDIR}/usr/share/initramfs-tools/hooks/
+    	install ../zzz-busybox ${DESTDIR}/usr/share/initramfs-tools/hooks/
+    	#install ../fsck ${DESTDIR}/usr/share/initramfs-tools/hooks/
     	install ../modules ${DESTDIR}/usr/share/initramfs-tools/
     	install ../modules ${DESTDIR}/etc/initramfs-tools/
     	
