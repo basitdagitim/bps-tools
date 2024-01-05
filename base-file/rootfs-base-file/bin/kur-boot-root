@@ -36,15 +36,25 @@ mount --bind /sys /hedef/sys
 mount --bind /proc /hedef/proc
 mount --bind /run /hedef/run
 mount --bind /tmp /hedef/tmp
+chroot /hedef /bin/busybox --install -s /bin
+
+chroot /hedef /etc/init.d/agettyinstall
+rm /hedef/etc/init.d/agettyinstall
+cp /hedef/etc/grub-config /hedef/boot/config-$(uname -r)
+
+chroot /hedef /usr/sbin/update-initramfs -u -k $(uname -r)
 
 chroot /hedef grub-install --removable --boot-directory=/boot /dev/sda --target=i386-pc
 mkdir -p /hedef/boot/grub
 bid=$(blkid /dev/sda2|cut -d' ' -f2|cut -c 7-42)
 touch /hedef/boot/grub/grub.cfg
-echo "linux /vmlinuz	root=UUID=${bid} rw quiet">>/hedef/boot/grub/grub.cfg
-echo "initrd /initrd.img">>/hedef/boot/grub/grub.cfg
+echo "linux /vmlinuz init=/usr/sbin/openrc-init root=UUID=${bid} rw quiet">>/hedef/boot/grub/grub.cfg
+echo "initrd /initrd.img-$(uname -r)">>/hedef/boot/grub/grub.cfg
 echo "boot">>/hedef/boot/grub/grub.cfg
-	
+
+chroot /hedef adduser -D -s /bin/sh by -h /home/by
+chroot /hedef echo -e "1\n1\n"|passwd by
+chroot /hedef echo -e "1\n1\n"|passwd root
 #umount -f -R /hedef/dev
 #umount -f -R /hedef/sys
 #umount -f -R /hedef/proc
