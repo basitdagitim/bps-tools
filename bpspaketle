@@ -23,15 +23,17 @@ initsetup()
 	
 	if [ -n "${source}" ]
 	then
-		wget -O ${name}-${version} ${source}
+		wget ${source}
 		dowloadfile=$(ls|head -1)
 		filetype=$(file -b --extension $dowloadfile|cut -d'/' -f1)
+		
 		echo "***********dosya sıkıştırma türü**********:${filetype}"
 		if [ ${filetype} == "bz2" ]; then tar -xvf ${dowloadfile}; fi
 		if [ ${filetype} == "tar" ]; then tar -xvf ${dowloadfile}; fi
 		if [ ${filetype} == "xz" ]; then tar -xvf ${dowloadfile}; fi
 		if [ "${filetype}" == "gz" ]; then echo "*****dosya gz ile sıkıştırılmış**"; tar -xvf ${dowloadfile}; fi
 		if [ "${filetype}" == "???" ]; then echo "****dosya zip ile sıkıştırılmış****"; unzip  ${dowloadfile}; fi
+		
 		#*********************************************************************************************************
 		director=$(find ./* -maxdepth 0 -type d)
 		if [ "${director}" != "./${name}-${version}" ]; 
@@ -71,6 +73,7 @@ cp paket-${name}-${version}.tar.gz ${dizin}/${paket}/${name}-${version}.bps
 
 # fonksiyonlar aşağıdaki sırayla çalışacaktır.
 echo "******************** initsetup ******************"; initsetup #bu dosya içindeki fonksiyon
+
 echo "******************** setup **********************"; setup #bpsbuild dosyasından gelen fonksiyon
 echo "******************** build **********************"; build #bpsbuild dosyasından gelen fonksiyon
 echo "******************** package ********************"; package #bpsbuild dosyasından gelen fonksiyon

@@ -42,6 +42,7 @@ mkdir -p $rootfs
 ./bpskur attr $rootfs/
 ./bpskur pcre2 $rootfs/
 ./bpskur findutils $rootfs/
+./bpskur openrc $rootfs/
 
 
 #****************modul yukleme*************************
