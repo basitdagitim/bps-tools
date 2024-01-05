@@ -33,15 +33,16 @@ initsetup()
 		if [ ${filetype} == "xz" ]; then tar -xvf ${dowloadfile}; fi
 		if [ "${filetype}" == "gz" ]; then echo "*****dosya gz ile sıkıştırılmış**"; tar -xvf ${dowloadfile}; fi
 		if [ "${filetype}" == "???" ]; then echo "****dosya zip ile sıkıştırılmış****"; unzip  ${dowloadfile}; fi
-		
+		rm ${dowloadfile}
 		#*********************************************************************************************************
 		director=$(find ./* -maxdepth 0 -type d)
 		if [ "${director}" != "./${name}-${version}" ]; 
 		then 
-		mv ${name}-${version} source-${name}-${version}
+		
 		mv $director ${name}-${version}; 
 		fi
 	fi
+	
 	mkdir -p build-${name}-${version}
 	mkdir -p rootfs-${name}-${version}
 	cp ${dizin}/${paket}/bpsbuild /tmp/bps/build

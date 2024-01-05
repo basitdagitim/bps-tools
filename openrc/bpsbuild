@@ -18,6 +18,7 @@ setup()
 	cd $SOURCEDIR
 	 meson setup build \
         --sysconfdir=/etc \
+        --libdir=/lib \
         --prefix=/ \
         -Ddefault_library=both \
         -Dzsh-completions=true \
