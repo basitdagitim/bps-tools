@@ -47,62 +47,15 @@ mkdir -p $rootfs
 ./bpskur pam $rootfs/
 ./bpskur libcap $rootfs/
 
-#****************modul yukleme*************************
-#cd $HOME/distro/linux-6.6.2
-#make bzImage modules
-#INSTALL_MOD_PATH="$HOME/distro/initrd" make modules_install
-#/sbin/depmod --all --basedir=initrd #modul indeksi oluşturluyor
-mkdir -p $rootfs/lib/modules/
-#mkdir -p $rootfs/lib/modules/$(uname -r)
-#mkdir -p $rootfs/lib/modules/$(uname -r)/moduller
+./bpskur zlib $rootfs/
+./bpskur zstd $rootfs/
+./bpskur libxml2 $rootfs/
 
+
+#****************modul yukleme*************************
+mkdir -p $rootfs/lib/modules/
 cp -rpf /lib/modules/*  $rootfs/lib/modules/ #sistemden kopyalandı..
 /sbin/depmod --all --basedir=$rootfs #modul indeksi oluşturluyor
-#**************************init dosyası oluşturuluyor***********************************
-
-cat >  $rootfs/init << EOF
-#!/bin/busybox ash
-/bin/busybox mkdir -p /bin
-/bin/busybox --install -s /bin
-#**********************************
-export PATH=/sbin:/bin:/usr/bin:/usr/sbin:
-
-[ -d /dev ]  || mkdir -m 0755 /dev
-[ -d /root ] || mkdir -m 0700 /root
-[ -d /sys ]  || mkdir /sys
-[ -d /proc ] || mkdir /proc
-mkdir -p /tmp /run
-touch /dev/null
-
-# devtmpfs does not get automounted for initramfs
-mount -t devtmpfs devtmpfs /dev
-mount -t proc proc /proc
-mount -t sysfs sysfs /sys
-mount -t tmpfs tmpfs /tmp
-#******************************************************************************
-for x in $(cat /proc/cmdline); do
-	case $x in
-	init=*)
-		init=${x#init=}
-		echo " bu bir test :${x#init=}"
-		${x#init=}
-		;;
-	esac
-done
-
-echo "disk başlatıldı"
-
-/bin/busybox ash
-#/bin/bash
-
-EOF
-
-
-
-chmod +x $rootfs/init 
-cd $rootfs
-find |cpio -H newc -o >../initrd.img
-
 
 
 #************************iso *********************************
@@ -111,37 +64,12 @@ mkdir -p $HOME/distro/iso/boot
 mkdir -p $HOME/distro/iso/boot/grub
 mkdir -p $HOME/distro/iso/live || true
 
-
-#squashfs dosyası oluşturuluyor iso dzinine kopyalanıyor
-#cp /boot/vmlinuz-$(uname -r) $rootfs/bvmlinuz #sistemde kullandığım kerneli kopyaladım istenirde kernel derlenebilir.
-#cp /boot/initrd.img* $rootfs/binitrd.img #oluşturduğumuz **initrd.img** dosyamızı taşıyoruz
-
 #cd $HOME/distro/
 mksquashfs $rootfs $HOME/distro/filesystem.squashfs -comp xz -wildcards
 mv $HOME/distro/filesystem.squashfs $HOME/distro/iso/live/filesystem.squashfs
 
-#iso dizinine vmlinuz ve initrd.img dosyamız kopyalanıyor
-#cp /boot/vmlinuz-$(uname -r) $HOME/distro/iso/boot/vmlinuz  #sistemde kullandığım kerneli kopyaladım istenirde kernel derlenebilir.
-#mv $HOME/distro/initrd.img $HOME/distro/iso/boot/initrd.img #oluşturduğumuz **initrd.img** dosyamızı taşıyoruz.
-
-
-#grub menüsü oluşturuluyor..
-#cat > $HOME/distro/iso/boot/grub/grub.cfg << EOF
-#linux /boot/vmlinuz net.ifnames=0 biosdevname=0
-#initrd /boot/initrd.img
-#boot boot=live
-#EOF
-
-
-
-
-#echo 'menuentry "Live GNU/Linux 64-bit" --class live {' > $HOME/distro/iso/boot/grub/grub.cfg
-#echo '    linux /boot/vmlinuz boot=live quiet live-config --' >> liveiso/boot/grub/grub.cfg
-#echo '    initrd /boot/initrd.img' >> $HOME/distro/iso/boot/grub/grub.cfg
-#echo '}' >> $HOME/distro/iso/boot/grub/grub.cfg
-
 grub-mkrescue $HOME/distro/iso/ -o $HOME/distro/distro.iso
-#qemu-system-x86_64 -cdrom $HOME/distro/distro.iso -m 1G
+
 
 
 

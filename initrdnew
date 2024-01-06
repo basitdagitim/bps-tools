@@ -18,51 +18,13 @@ mkdir -p $boot/bin
 ./bpskur e2fsprogs $boot/
 
 
-#****************modul yukleme*************************
-#cd $HOME/distro/linux-6.6.2
-#make bzImage modules
-#INSTALL_MOD_PATH="$HOME/distro/initrd" make modules_install
-#/sbin/depmod --all --basedir=initrd #modul indeksi oluşturluyor
 mkdir -p $boot/lib/modules/
 
-#moduller {cdrom,loop,md,ahci,block,ata,firewire,sd,scsi,message,pcmcia,virtio,host}
-#moduller {storage,crypto,fs,lib,dm-snapshot,overlay,isofs,squashfs,hfsplus,sr_mod,dm_mod}
-#moduller {nls,nls_utf8,overlayfs,udf,ext4,usb-storage}
-
-#for directory in {lib,fs,crypto,net} \
-#   drivers/{usb,block,ata,md,firewire} \
-#    drivers/{scsi,message,pcmcia,virtio} ;
-#   	do
-    	#echo ${directory}
-    	#    misc \
-#  find /lib/modules/$(uname -r)/kernel/${directory}/ -type f \
-#      -exec install {} $HOME/distro/initrd/lib/modules/$(uname -r)/moduller/ \;
-#	done
-#cp -prvf $HOME/boot/initrd/lib/modules/$(uname -r)/kernel/* $boot/lib/modules/$(uname -r)/moduller/ #sistemden kopyalandı..
 cp -rpf /lib/modules/*  $boot/lib/modules/  #sistemden kopyalandı..
 /sbin/depmod --all --basedir=$boot #modul indeksi oluşturluyor
 #*****************kurallar yüklenecek*************************
 mkdir -p $boot/etc/udev/
 mkdir -p $boot/lib/udev/
-##cp /etc/udev/rules.d -rf  $boot/etc/udev/
-##cp /lib/udev/rules.d -rf  $boot/lib/udev/
-
-#cp $HOME/boot/initrd/etc/udev/rules.d -rf  $boot/etc/udev/
-#cp $HOME/boot/initrd/lib/udev/rules.d -rf  $boot/lib/udev/
-#cp /etc/udev/rules.d -rf  $boot/etc/udev/
-#cp /lib/udev/rules.d -rf  $boot/lib/udev/
-
-#rm -rf $HOME/distro/initrd/lib/udev/rules.d/80-drivers.rules
-#rm -rf $HOME/distro/initrd/lib/udev/rules.d/80-debian-compat.rules
-#rm -rf $boot/lib/udev/rules.d/80-net-setup-link.rules
-#rm -rf $boot/lib/udev/rules.d/73-seat-late.rules
-#rm -rf $boot/etc/udev/rules.d/40-libsane.rules
-#rm -rf $boot/etc/udev/rules.d/S99-2000S1.rules
-
-#rm -rf $HOME/distro/initrd/lib/udev/rules.d/90-nm-thunderbolt.rules
-#rm -rf $HOME/distro/initrd/lib/udev/rules.d/73-seat-late.rules
-
-
 cd $boot
 find |cpio -H newc -o >../boot-initrd.img
 

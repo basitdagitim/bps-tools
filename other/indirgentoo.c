@@ -88,7 +88,7 @@ int main(int argc, char **argv)
     curl_easy_setopt(curl, CURLOPT_USE_SSL, CURLUSESSL_ALL);
 curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, 1L);
     /* Switch on full protocol/debug output */
-    curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+   // curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
 
     res = curl_easy_perform(curl);
 
