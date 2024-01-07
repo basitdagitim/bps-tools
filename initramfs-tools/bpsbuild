@@ -47,7 +47,6 @@ package()
     	
 
     	install ../zzz-busybox ${DESTDIR}/usr/share/initramfs-tools/hooks/
-    	#install ../fsck ${DESTDIR}/usr/share/initramfs-tools/hooks/
     	install ../modules ${DESTDIR}/usr/share/initramfs-tools/
     	install ../modules ${DESTDIR}/etc/initramfs-tools/
     	

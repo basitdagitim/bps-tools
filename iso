@@ -50,11 +50,14 @@ mkdir -p $rootfs
 ./bpskur zlib $rootfs/
 ./bpskur zstd $rootfs/
 ./bpskur libxml2 $rootfs/
-
+./bpskur brotli $rootfs/
+./bpskur linux-image $rootfs/
+rm -rf $rootfs/boot
 
 #****************modul yukleme*************************
-mkdir -p $rootfs/lib/modules/
-cp -rpf /lib/modules/*  $rootfs/lib/modules/ #sistemden kopyalandı..
+#mkdir -p $rootfs/lib/modules/
+#cp -rpf /lib/modules/*  $rootfs/lib/modules/ #sistemden kopyalandı..
+
 /sbin/depmod --all --basedir=$rootfs #modul indeksi oluşturluyor
 
 

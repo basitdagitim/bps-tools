@@ -16,15 +16,15 @@ mkdir -p $boot/bin
 ./bpskur base-file $boot/
 
 ./bpskur e2fsprogs $boot/
+./bpskur linux-image $boot/
 
+#mkdir -p $boot/lib/modules/
 
-mkdir -p $boot/lib/modules/
-
-cp -rpf /lib/modules/*  $boot/lib/modules/  #sistemden kopyalandı..
+#cp -rpf /lib/modules/*  $boot/lib/modules/  #sistemden kopyalandı..
 /sbin/depmod --all --basedir=$boot #modul indeksi oluşturluyor
 #*****************kurallar yüklenecek*************************
-mkdir -p $boot/etc/udev/
-mkdir -p $boot/lib/udev/
+#mkdir -p $boot/etc/udev/
+#mkdir -p $boot/lib/udev/
 cd $boot
 find |cpio -H newc -o >../boot-initrd.img
 
@@ -38,39 +38,40 @@ mkdir -p $HOME/distro/iso/live || true
 
 #iso dizinine vmlinuz ve initrd.img dosyamız kopyalanıyor
 #cp $HOME/distro/linux-6.6.2/arch/x86/boot/bzImage $HOME/distro/iso/boot/vmlinuz 
-cp /boot/vmlinuz-$(uname -r) $HOME/distro/iso/boot/vmlinuz  #sistemde kullandığım kerneli kopyaladım istenirde kernel derlenebilir.
+cp $boot/boot/* $HOME/distro/iso/boot/  #sistemde kullandığım kerneli kopyaladım istenirde kernel derlenebilir.
+rm -rf $boot/boot
 zstd  $HOME/distro/boot-initrd.img -10
 mv $HOME/distro/boot-initrd.img.zst $HOME/distro/boot-initrd.img #oluşturduğumuz **initrd.img** dosyamızı taşıyoruz.
-mv $HOME/distro/boot-initrd.img $HOME/distro/iso/boot/initrd.img #oluşturduğumuz **initrd.img** dosyamızı taşıyoruz.
+mv $HOME/distro/boot-initrd.img $HOME/distro/iso/boot/initrd.img-6.6.0-amd64 #oluşturduğumuz **initrd.img** dosyamızı taşıyoruz.
 
 echo 'menuentry "Linux GNU/Linux 64-bit" --class liveiso  {' > $HOME/distro/iso/boot/grub/grub.cfg
-echo '    linux /boot/vmlinuz net.ifnames=0 biosdevname=0 ' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    initrd /boot/initrd.img' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz-6.6.0-amd64 net.ifnames=0 biosdevname=0 ' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img-6.6.0-amd64' >> $HOME/distro/iso/boot/grub/grub.cfg
 echo '}' >> $HOME/distro/iso/boot/grub/grub.cfg
 
 echo 'menuentry "Disk GNU/Linux 64-bit" --class liveiso  {' > $HOME/distro/iso/boot/grub/grub.cfg
-echo '    linux /boot/vmlinuz net.ifnames=0 biosdevname=0 init=/bin/initdisk ' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    initrd /boot/initrd.img' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz-6.6.0-amd64 net.ifnames=0 biosdevname=0 init=/bin/initdisk ' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img-6.6.0-amd64' >> $HOME/distro/iso/boot/grub/grub.cfg
 echo '}' >> $HOME/distro/iso/boot/grub/grub.cfg
 
 echo 'menuentry "Live GNU/Linux 64-bit" --class liveiso  {' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    linux /boot/vmlinuz init=/bin/canli ' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    initrd /boot/initrd.img' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz-6.6.0-amd64 init=/bin/canli ' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img-6.6.0-amd64' >> $HOME/distro/iso/boot/grub/grub.cfg
 echo '}' >> $HOME/distro/iso/boot/grub/grub.cfg
 
 echo 'menuentry "Kur iki Part GNU/Linux 64-bit" --class liveiso  {' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    linux /boot/vmlinuz init=/bin/kur2 ' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    initrd /boot/initrd.img' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz-6.6.0-amd64 init=/bin/kur2 ' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img-6.6.0-amd64' >> $HOME/distro/iso/boot/grub/grub.cfg
 echo '}' >> $HOME/distro/iso/boot/grub/grub.cfg
 
 echo 'menuentry "Kur-Tek Part GNU/Linux 64-bit" --class liveiso  {' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    linux /boot/vmlinuz init=/bin/kur' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    initrd /boot/initrd.img' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz-6.6.0-amd64 init=/bin/kur' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img-6.6.0-amd64' >> $HOME/distro/iso/boot/grub/grub.cfg
 echo '}' >> $HOME/distro/iso/boot/grub/grub.cfg
 
 echo 'menuentry "Kur UEFI GNU/Linux 64-bit" --class liveiso  {' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    linux /boot/vmlinuz init=/bin/kuruefi ' >> $HOME/distro/iso/boot/grub/grub.cfg
-echo '    initrd /boot/initrd.img' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz-6.6.0-amd64 init=/bin/kuruefi ' >> $HOME/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img-6.6.0-amd64' >> $HOME/distro/iso/boot/grub/grub.cfg
 echo '}' >> $HOME/distro/iso/boot/grub/grub.cfg
 
 #grub-mkrescue $HOME/distro/iso/ -o $HOME/distro/distro.iso
