@@ -52,12 +52,8 @@ mkdir -p $rootfs
 ./bpskur libxml2 $rootfs/
 ./bpskur brotli $rootfs/
 ./bpskur linux-image $rootfs/
+
 rm -rf $rootfs/boot
-
-#****************modul yukleme*************************
-#mkdir -p $rootfs/lib/modules/
-#cp -rpf /lib/modules/*  $rootfs/lib/modules/ #sistemden kopyalandı..
-
 /sbin/depmod --all --basedir=$rootfs #modul indeksi oluşturluyor
 
 
@@ -67,10 +63,8 @@ mkdir -p $HOME/distro/iso/boot
 mkdir -p $HOME/distro/iso/boot/grub
 mkdir -p $HOME/distro/iso/live || true
 
-#cd $HOME/distro/
 mksquashfs $rootfs $HOME/distro/filesystem.squashfs -comp xz -wildcards
 mv $HOME/distro/filesystem.squashfs $HOME/distro/iso/live/filesystem.squashfs
-
 grub-mkrescue $HOME/distro/iso/ -o $HOME/distro/distro.iso
 
 
