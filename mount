@@ -1,0 +1,3 @@
+#!/bin/sh
+
+for i in dev dev/pts proc sys; do mount -o bind /$i /home/etapadmin/distro/rootfs/$i; done

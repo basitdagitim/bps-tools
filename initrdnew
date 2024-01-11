@@ -6,6 +6,7 @@ mkdir -p $HOME/distro
 mkdir -p $boot
 mkdir -p $boot/bin
 ./bpsupdate
+
 ./bpskur glibc $boot/
 ./bpskur readline $boot/
 ./bpskur ncurses $boot/

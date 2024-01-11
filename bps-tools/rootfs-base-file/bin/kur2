@@ -1,0 +1,15 @@
+#!/bin/sh
+echo "*********************eudev çalıştırıldı ******************************"
+/bin/udv
+echo "*********************ek modüller yüklendi ******************************"
+modprobe ext4
+modprobe loop
+echo "*********************disk bölümleri silindi ******************************"
+sfdisk --delete /dev/sda
+echo "********************* disk bölümleri oluşturuldu******************************"
+#sfdisk<disk.layout
+echo -e "label: dos\n,1GiB\n,"|sfdisk /dev/sda
+echo "********************* kurulum başladı******************************"
+/bin/kur-boot-root
+
+

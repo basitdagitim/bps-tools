@@ -21,13 +21,12 @@ else
 	echo "***********Paket Bulunamadı**********"
 	exit
 fi
-echo "${name} Paketi Kuruluyor."
 
 # paketi indirme
 mkdir -p /tmp/bps
 mkdir -p /tmp/bps/kur
 rm -rf /tmp/bps/kur/*
-curl -Lk -o /tmp/bps/kur/${name}-${version}.tar.gz https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps 1>>/dev/null 2>>/dev/null
+curl -Lk -o /tmp/bps/kur/${name}-${version}.tar.gz https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps
 mkdir -p /var/lib/bps
 touch /var/lib/bps/index.lst
 cd /tmp/bps/kur/
@@ -38,7 +37,7 @@ mkdir -p rootfs
 tar -xf rootfs.tar.xz -C rootfs
 
 # paketi kurma
-cp -prfv rootfs/* $ROOTFS/ 1>>/dev/null 2>>/dev/null
+cp -prfv rootfs/* $ROOTFS/
 
 #eğer daha kurulmuşsa kayıt siliniyor
 sed -i '/name=\"${paket}\"/d' /var/lib/bps/index.lst
