@@ -1,0 +1,74 @@
+#!/bin/bash
+
+
+rootfs="$HOME/distro/rootfs"
+rm -rf $HOME/distro/iso
+rm -rf $rootfs
+bash ./initrdnew
+mkdir -p $HOME/distro
+mkdir -p $rootfs
+./bpsupdate
+./bpskur glibc $rootfs
+./bpskur readline $rootfs/
+./bpskur ncurses $rootfs/
+./bpskur \bash $rootfs/
+./bpskur busybox $rootfs/
+./bpskur kmod $rootfs/
+./bpskur eudev $rootfs/
+./bpskur util-linux $rootfs/
+./bpskur base-file $rootfs/
+./bpskur grub $rootfs/
+./bpskur e2fsprogs $rootfs/
+./bpskur libarchive $rootfs/
+
+./bpskur xz $rootfs/
+
+./bpskur curl $rootfs/
+./bpskur openssl $rootfs/
+./bpskur initramfs-tools $rootfs/
+./bpskur \gzip $rootfs/
+
+./bpskur coreutils $rootfs/
+./bpskur acl $rootfs/
+./bpskur atr $rootfs/
+./bpskur gmp $rootfs/
+
+./bpskur libselinux $rootfs/
+./bpskur libsepol $rootfs/
+./bpskur libsemanage $rootfs/
+./bpskur mcstrans $rootfs/
+
+
+./bpskur attr $rootfs/
+./bpskur pcre2 $rootfs/
+./bpskur findutils $rootfs/
+./bpskur openrc $rootfs/
+./bpskur audit $rootfs/
+./bpskur pam $rootfs/
+./bpskur libcap $rootfs/
+
+./bpskur zlib $rootfs/
+./bpskur zstd $rootfs/
+./bpskur libxml2 $rootfs/
+./bpskur brotli $rootfs/
+./bpskur linux-image $rootfs/
+
+rm -rf $rootfs/boot
+/sbin/depmod --all --basedir=$rootfs #modul indeksi oluşturluyor
+
+
+#************************iso *********************************
+mkdir -p $HOME/distro/iso
+mkdir -p $HOME/distro/iso/boot
+mkdir -p $HOME/distro/iso/boot/grub
+mkdir -p $HOME/distro/iso/live || true
+
+mksquashfs $rootfs $HOME/distro/filesystem.squashfs -comp xz -wildcards
+mv $HOME/distro/filesystem.squashfs $HOME/distro/iso/live/filesystem.squashfs
+grub-mkrescue $HOME/distro/iso/ -o $HOME/distro/distro.iso
+
+
+
+
+
+

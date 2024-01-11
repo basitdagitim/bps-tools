@@ -1,0 +1,5 @@
+#!/bin/sh
+echo "Paket depo indexi güncelleriniyor "
+./indirgentoo /tmp/index.lst https://basitdagitim.github.io/binary-package/index.lst
+echo "Güncelleme Tamamlandı."
+

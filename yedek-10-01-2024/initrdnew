@@ -1,79 +1,40 @@
 #!/bin/bash
-rootfs="$HOME/distro/rootfs"
-rm -rf $HOME/distro/iso
-rm -rf $rootfs
-#bash ./initrdnew
+boot=$HOME/distro/initrd
+rm -rf $boot
+
 mkdir -p $HOME/distro
-mkdir -p $rootfs
+mkdir -p $boot
+mkdir -p $boot/bin
 ./bpsupdate
-./bpskur glibc $rootfs
-./bpskur readline $rootfs/
-./bpskur ncurses $rootfs/
-./bpskur \bash $rootfs/
-./bpskur busybox $rootfs/
-./bpskur kmod $rootfs/
-./bpskur eudev $rootfs/
-./bpskur util-linux $rootfs/
-./bpskur \grep $rootfs/
-./bpskur \sed $rootfs/
 
-./bpskur base-file $rootfs/
-./bpskur grub $rootfs/
-./bpskur e2fsprogs $rootfs/
-./bpskur libarchive $rootfs/
+./bpskur glibc $boot/
+./bpskur readline $boot/
+./bpskur ncurses $boot/
+./bpskur busybox $boot/
+./bpskur kmod $boot/
+./bpskur eudev $boot/
+./bpskur util-linux $boot/
+./bpskur base-file $boot/
 
-./bpskur xz $rootfs/
+./bpskur e2fsprogs $boot/
+./bpskur linux-image $boot/
 
-./bpskur curl $rootfs/
-./bpskur openssl $rootfs/
-./bpskur initramfs-tools $rootfs/
-./bpskur \gzip $rootfs/
-
-./bpskur coreutils $rootfs/
-./bpskur acl $rootfs/
-./bpskur atr $rootfs/
-./bpskur gmp $rootfs/
-
-./bpskur libselinux $rootfs/
-./bpskur libsepol $rootfs/
-./bpskur libsemanage $rootfs/
-./bpskur mcstrans $rootfs/
-
-
-./bpskur attr $rootfs/
-./bpskur pcre2 $rootfs/
-./bpskur findutils $rootfs/
-./bpskur openrc $rootfs/
-./bpskur audit $rootfs/
-./bpskur pam $rootfs/
-./bpskur libcap $rootfs/
-
-./bpskur zlib $rootfs/
-./bpskur zstd $rootfs/
-./bpskur libxml2 $rootfs/
-./bpskur brotli $rootfs/
-./bpskur linux-image $rootfs/
-
-
-/sbin/depmod --all --basedir=$rootfs #modul indeksi oluşturluyor
-
-
+/sbin/depmod --all --basedir=$boot #modul indeksi oluşturluyor
+#*****************initrd.img oluşturuluyor*************************
+cd $boot
+find |cpio -H newc -o >../boot-initrd.img
 #************************iso *********************************
 mkdir -p $HOME/distro/iso
 mkdir -p $HOME/distro/iso/boot
 mkdir -p $HOME/distro/iso/boot/grub
 mkdir -p $HOME/distro/iso/live || true
 
-#### Copy kernel and initramfs (Debian/Devuan)
-cp -pf $rootfs/boot/initrd.img-* $HOME/distro/iso/boot/initrd.img
-cp -pf $rootfs/boot/vmlinuz-* $HOME/distro/iso/boot/vmlinuz
-
-#### Create squashfs
-mksquashfs $rootfs $HOME/distro/filesystem.squashfs -comp xz -wildcards
-mv $HOME/distro/filesystem.squashfs $HOME/distro/iso/live/filesystem.squashfs
-#rm -rf $rootfs/boot
-
-#### Write grub.cfg
+cp $boot/boot/vmlinuz* $HOME/distro/iso/boot/vmlinuz  #kerneli kopyaladı.
+cp $boot/boot/config* $HOME/distro/iso/boot/config  #kerneli kopyaladı.
+rm -rf $boot/boot
+zstd  $HOME/distro/boot-initrd.img -10
+mv $HOME/distro/boot-initrd.img.zst $HOME/distro/boot-initrd.img #oluşturduğumuz **initrd.img** dosyamızı taşıyoruz.
+mv $HOME/distro/boot-initrd.img $HOME/distro/iso/boot/initrd.img #oluşturduğumuz **initrd.img** dosyamızı taşıyoruz.
 
 echo 'menuentry "Linux GNU/Linux 64-bit" --class liveiso  {' > $HOME/distro/iso/boot/grub/grub.cfg
 echo '    linux /boot/vmlinu net.ifnames=0 biosdevname=0 ' >> $HOME/distro/iso/boot/grub/grub.cfg
@@ -105,9 +66,8 @@ echo '    linux /boot/vmlinuz init=/bin/kuruefi ' >> $HOME/distro/iso/boot/grub/
 echo '    initrd /boot/initrd.img' >> $HOME/distro/iso/boot/grub/grub.cfg
 echo '}' >> $HOME/distro/iso/boot/grub/grub.cfg
 
-
-grub-mkrescue $HOME/distro/iso/ -o $HOME/distro/distro.iso
-
+#grub-mkrescue $HOME/distro/iso/ -o $HOME/distro/distro.iso
+#qemu-system-x86_64 -cdrom $HOME/distro/distro.iso -m 1G
 
 
 
