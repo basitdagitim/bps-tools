@@ -109,9 +109,3 @@ echo '}' >> $HOME/distro/iso/boot/grub/grub.cfg
 
 
 grub-mkrescue $HOME/distro/iso/ -o $HOME/distro/distro.iso
-
-
-
-
-
-

@@ -4,8 +4,13 @@ modprobe loop
 modprobe ext4
 
 yes |mkfs.ext4 /dev/sda2
-yes |mkfs.vfat /dev/sda1
-cd /
+yes |mkfs.vfat /dev
+
+
+
+
+
+
 
 mkdir -p hedef
 mkdir -p kaynak
@@ -48,6 +53,7 @@ chroot /hedef /usr/sbin/update-initramfs -u -k $(uname -r)
 chroot /hedef grub-install --removable --boot-directory=/boot /dev/sda --target=i386-pc
 mkdir -p /hedef/boot/grub
 bid=$(blkid /dev/sda2|cut -d' ' -f2|cut -c 7-42)
+rm -rf /hedef/boot/grub/grub.cfg
 touch /hedef/boot/grub/grub.cfg
 echo "linux /vmlinuz-$(uname -r) init=/usr/sbin/openrc-init root=UUID=${bid} rw quiet">>/hedef/boot/grub/grub.cfg
 echo "initrd /initrd.img-$(uname -r)">>/hedef/boot/grub/grub.cfg
