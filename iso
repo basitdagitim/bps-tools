@@ -54,6 +54,8 @@ mkdir -p $rootfs
 ./bpskur brotli $rootfs/
 ./bpskur linux-image $rootfs/
 
+./bpskur live-boot $rootfs/
+./bpskur live-config $rootfs/
 
 /sbin/depmod --all --basedir=$rootfs #modul indeksi oluşturluyor
 
