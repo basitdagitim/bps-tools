@@ -1,0 +1,141 @@
+#!/bin/bash
+rootfs="/tmp/distro/rootfs"
+rm -rf /tmp/distro/iso
+rm -rf $rootfs
+mkdir -p /tmp/distro
+mkdir -p $rootfs/bin
+#export PATH=/bbin:$PATH
+cp ./busyboxtools $rootfs/bin/busybox
+cd $rootfs/bin/
+#busybox --install -s ./
+cd $rootfs/
+mkdir  var run dev sys proc etc tmp tmp/bps tmp/bps/kur tmp/bps/kur/rootfs
+bash -c "echo '127.1.1.0 basitdagitim' >> etc/hosts"
+bash -c "echo 'basitdagitim' > etc/hostname"
+bash -c "echo 'nameserver 8.8.8.8' > etc/resolv.conf"
+
+### system chroot  bind/mount
+for i in dev dev/pts proc sys; do mount -o bind /$i $rootfs/$i; done
+### manuel bps-tools install
+chroot $rootfs busybox wget -O /tmp/base-file-1.0.bps https://github.com/basitdagitim/binary-package/raw/master/base-file/base-file-1.0.bps 1>/dev/null 2>dev/null
+chroot $rootfs busybox tar -xf /tmp/base-file-1.0.bps -C /tmp/bps/kur
+chroot $rootfs busybox tar -xf /tmp/bps/kur/rootfs.tar.xz -C /
+
+### installing bps package in rootfs
+chroot $rootfs busybox ash /bin/bbpsupdate
+chroot $rootfs busybox ash /bin/bbpskur glibc /
+
+chroot $rootfs busybox ash /bin/bbpskur pcre2 / #grep'den önce kurulmalı
+chroot $rootfs busybox ash /bin/bbpskur libselinux / 	#atr sed paketinden önce kurulmalı
+chroot $rootfs busybox ash /bin/bbpskur libsepol / 	#atr sed paketinden önce kurulmalı
+chroot $rootfs busybox ash /bin/bbpskur libsemanage / 	#atr sed paketinden önce kurulmalı
+chroot $rootfs busybox ash /bin/bbpskur mcstrans /	#atr sed paketinden önce kurulmalı
+chroot $rootfs busybox ash /bin/bbpskur attr / 		#atr sed paketinden önce kurulmalı
+
+chroot $rootfs busybox ash /bin/bbpskur readline /
+chroot $rootfs busybox ash /bin/bbpskur ncurses /
+chroot $rootfs busybox ash /bin/bbpskur \bash /
+chroot $rootfs busybox ash /bin/bbpskur busybox /
+chroot $rootfs busybox ash /bin/bbpskur kmod /
+chroot $rootfs busybox ash /bin/bbpskur eudev /
+chroot $rootfs busybox ash /bin/bbpskur util-linux /
+
+chroot $rootfs busybox ash /bin/bbpskur \grep /
+chroot $rootfs busybox ash /bin/bbpskur \sed /
+
+chroot $rootfs busybox ash /bin/bbpskur base-file /
+chroot $rootfs busybox ash /bin/bbpskur grub /
+chroot $rootfs busybox ash /bin/bbpskur e2fsprogs /
+chroot $rootfs busybox ash /bin/bbpskur libarchive /
+
+chroot $rootfs busybox ash /bin/bbpskur xz /
+
+chroot $rootfs busybox ash /bin/bbpskur curl /
+chroot $rootfs busybox ash /bin/bbpskur openssl /
+chroot $rootfs busybox ash /bin/bbpskur initramfs-tools /
+chroot $rootfs busybox ash /bin/bbpskur \gzip /
+
+
+chroot $rootfs busybox ash /bin/bbpskur coreutils /
+chroot $rootfs busybox ash /bin/bbpskur acl /
+
+chroot $rootfs busybox ash /bin/bbpskur atr /
+chroot $rootfs busybox ash /bin/bbpskur gmp /
+
+
+
+
+chroot $rootfs busybox ash /bin/bbpskur findutils /
+chroot $rootfs busybox ash /bin/bbpskur openrc /
+chroot $rootfs busybox ash /bin/bbpskur audit /
+chroot $rootfs busybox ash /bin/bbpskur pam /
+chroot $rootfs busybox ash /bin/bbpskur libcap /
+
+chroot $rootfs busybox ash /bin/bbpskur zlib /
+chroot $rootfs busybox ash /bin/bbpskur zstd /
+chroot $rootfs busybox ash /bin/bbpskur libxml2 /
+chroot $rootfs busybox ash /bin/bbpskur brotli /
+chroot $rootfs busybox ash /bin/bbpskur linux-image /
+
+chroot $rootfs busybox ash /bin/bbpskur live-boot /
+chroot $rootfs busybox ash /bin/bbpskur live-config /
+chroot $rootfs busybox ash /bin/bbpskur parted /
+chroot $rootfs busybox ash /bin/bbpskur dosfstools /
+
+### update-initrd
+mv  $rootfs/boot/config* $rootfs/boot/config-6.6.0
+cp  $rootfs/boot/config* $rootfs/etc/kernel-config
+chroot $rootfs update-initramfs -u -k 6.6.0
+
+#### system chroot umount
+for dir in dev dev/pts proc sys ; do
+    while umount -lf -R $rootfs/$dir 2>/dev/null ; do true; done
+done
+
+#************************iso *********************************
+mkdir -p /tmp/distro/iso
+mkdir -p /tmp/distro/iso/boot
+mkdir -p /tmp/distro/iso/boot/grub
+mkdir -p /tmp/distro/iso/live || true
+
+#### Copy kernel and initramfs (Debian/Devuan)
+
+
+cp -pf $rootfs/boot/initrd.img-* /tmp/distro/iso/boot/initrd.img
+cp -pf $rootfs/boot/vmlinuz-* /tmp/distro/iso/boot/vmlinuz
+rm -rf $rootfs/boot
+#### Create squashfs
+mksquashfs $rootfs /tmp/distro/filesystem.squashfs -comp xz -wildcards
+mv /tmp/distro/filesystem.squashfs /tmp/distro/iso/live/filesystem.squashfs
+#rm -rf $rootfs/boot
+
+#### Write grub.cfg
+
+echo 'menuentry "Disk GNU/Linux 64-bit" --class liveiso  {' > /tmp/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz boot=live net.ifnames=0 biosdevname=0 init=/bin/initdisk ' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
+
+echo 'menuentry "Live GNU/Linux 64-bit" --class liveiso  {' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz boot=live init=/bin/canli ' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
+
+echo 'menuentry "Kur iki Part GNU/Linux 64-bit" --class liveiso  {' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz boot=live init=/bin/kur2 ' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
+
+echo 'menuentry "Kur-Tek Part GNU/Linux 64-bit" --class liveiso  {' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz init=/bin/kur' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
+
+echo 'menuentry "Kur UEFI GNU/Linux 64-bit" --class liveiso  {' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '    linux /boot/vmlinuz init=/bin/kuruefi ' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
+echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
+
+
+grub-mkrescue /tmp/distro/iso/ -o /tmp/distro/distro.iso
+

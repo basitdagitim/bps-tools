@@ -6,16 +6,9 @@ modprobe ext4
 yes |mkfs.ext4 /dev/sda2
 yes |mkfs.vfat /dev
 
-
-
-
-
-
-
 mkdir -p hedef
 mkdir -p kaynak
 mkdir -p cdrom
-
 
 yes |e2fsck -f /dev/sda2
 yes |tune2fs -O ^metadata_csum /dev/sda2
@@ -28,7 +21,7 @@ mount -t vfat /dev/sda1 /hedef/boot
 cp -prfv /kaynak/* /hedef/
 cp /cdrom/boot/initrd.img /hedef/boot/initrd.img-$(uname -r)
 cp /cdrom/boot/vmlinuz /hedef/boot/vmlinuz-$(uname -r)
-cp /cdrom/boot/config /hedef/boot/config-$(uname -r)
+cp /hedef/etc/kernel-config /hedef/boot/config-$(uname -r)
 
 
 mkdir -p /hedef/dev
@@ -46,7 +39,7 @@ chroot /hedef /bin/busybox --install -s /bin
 
 chroot /hedef /etc/init.d/agettyinstall
 rm /hedef/etc/init.d/agettyinstall
-#cp /hedef/etc/grub-config /hedef/boot/config-$(uname -r)
+
 
 chroot /hedef /usr/sbin/update-initramfs -u -k $(uname -r)
 
