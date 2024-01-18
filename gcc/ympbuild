@@ -1,0 +1,90 @@
+#!/usr/bin/env bash
+name='gcc'
+release='2'
+version='13.1.0'
+url='https://ftp.gnu.org/gnu/gcc/'
+description='GNU Compiler Collection'
+email='parduscix@yandex.ru'
+maintainer='sulincix'
+license=('GPLv3')
+source=("https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz")
+depends=(binutils libmpc zlib linux-headers)
+makedepends=( )
+md5sums=('43e4de77f2218c83ca675257ea1af9ef')
+arch=('x86_64')
+group=(sys.devel)
+uses=(multilib)
+uses_extra=(langs)
+
+cd $name-$version
+export CFLAGS="-O2 -s"
+export CXXFLAGS="-O2 -s"
+unset LDFLAGS
+
+prepare(){
+    cd ..
+    # tar permissions and owners is not supported by ymp sandbox.
+    # we remove broken source and extract again without permission and owners
+    rm -rf $name-$version
+    tar --no-same-owner --no-same-permissions -xvf $name-$version.tar.xz
+}
+
+setup(){
+    options=(
+      --prefix=/usr
+      --libexecdir=/usr/libexec
+      --mandir=/usr/share/man
+      --infodir=/usr/share/info
+      --enable-languages=c,c++$(use_opt langs ",fortran,go,objc,obj-c++,jit" "")
+      --with-linker-hash-style=gnu
+      --with-system-zlib
+      --enable-__cxa_atexit
+      --enable-cet=auto
+      --enable-checking=release
+      --enable-clocale=gnu
+      --enable-default-pie
+      --enable-default-ssp
+      --enable-gnu-indirect-function
+      --enable-gnu-unique-object
+      --enable-libstdcxx-backtrace
+      --enable-link-serialization=1
+      --enable-linker-build-id
+      --enable-lto
+      --enable-multilib
+      --enable-plugin
+      --enable-shared
+      --enable-threads=posix
+      --disable-libssp
+      --disable-libstdcxx-pch
+      --disable-werror
+      --without-zstd
+      --disable-nls
+    )
+    mkdir build
+    cd build
+    ../configure ${options[@]} \
+        --libdir=/usr/lib64 \
+        --target=x86_64-pc-linux-gnu \
+        $(use_opt multilib "--enable-multilib" "") \
+        $(use_opt multilib "--with-multilib-list=m32,m64" "")
+}
+
+build(){
+    cd build
+    make $jobs
+}
+
+package(){
+    cd build
+    make install $jobs
+    mkdir -p ${DESTDIR}/usr/lib64/
+    if use multilib ; then
+        # move lib to lib64
+        if [ -d ${DESTDIR}/usr/lib ] && [ ! -d ${DESTDIR}/usr/lib32 ] ; then
+            mv ${DESTDIR}/usr/{lib,lib32}
+        fi
+    fi
+    ln -s gcc ${DESTDIR}/usr/bin/cc
+    ln -s g++ ${DESTDIR}/usr/bin/cxx
+}
+
