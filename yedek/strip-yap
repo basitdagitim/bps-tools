@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+	  	  while read -rd '' file; do
+        case "$(file -Sib "$file")" in
+            application/x-sharedlib\;*)      # Libraries (.so)
+                strip "$file" ;;
+            application/x-executable\;*)     # Binaries
+                strip "$file" ;;
+            application/x-pie-executable\;*) # Relocatable binaries
+                strip "$file" ;;
+        esac
+       
+    done< <(find "./" -type f -iname "*" -print0)
+    	
+    	
+

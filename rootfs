@@ -85,8 +85,8 @@ chroot $rootfs busybox ash /bin/bbpskur dosfstools /
 ### update-initrd
 fname=$(basename $rootfs/boot/config*)
 kversion=${fname:7}
-chroot $rootfs mv  /boot/config* /boot/config-$kversion
-chroot $rootfs cp  /boot/config* /etc/kernel-config
+mv $rootfs/boot/config* $rootfs/boot/config-$kversion
+cp $rootfs/boot/config-$kversion $rootfs/etc/kernel-config
 chroot $rootfs update-initramfs -u -k $kversion
 
 #### system chroot umount
@@ -109,7 +109,6 @@ rm -rf $rootfs/boot
 #### Create squashfs
 mksquashfs $rootfs /tmp/distro/filesystem.squashfs -comp xz -wildcards
 mv /tmp/distro/filesystem.squashfs /tmp/distro/iso/live/filesystem.squashfs
-#rm -rf $rootfs/boot
 
 #### Write grub.cfg
 

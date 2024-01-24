@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 version="13.1.0"
 name="gcc"
-depends="glibc,binutils,libmpc,zlib,linux-headers"
+depends="glibc,gmp,mpc,mpfr,binutils,libmpc,zlib,linux-headers"
 description="DOS filesystem tools - provides mkdosfs, mkfs.msdos, mkfs.vfat"
 source="https://ftp.gnu.org/gnu/gcc/gcc-${version}/gcc-${version}.tar.xz"
 groups="sys.devel"
+
 export CFLAGS="-O2 -s"
 export CXXFLAGS="-O2 -s"
 unset LDFLAGS
 setup()
 {
-#cd $SOURCEDIR
+
 	 options=(
       --prefix=/usr
       --libexecdir=/usr/libexec
@@ -47,9 +48,7 @@ setup()
     ../configure ${options[@]} \
         --libdir=/usr/lib64 \
         --target=x86_64-pc-linux-gnu 
-        #\
-        #$(use_opt multilib "--enable-multilib" "") \
-        #$(use_opt multilib "--with-multilib-list=m32,m64" "")
+
 	
 }
 build()
@@ -62,12 +61,26 @@ package()
 	cd $SOURCEDIR/build
 	make install DESTDIR=${DESTDIR}
     	
-    	
     	mkdir -p ${DESTDIR}/usr/lib64/
     	ln -s gcc ${DESTDIR}/usr/bin/cc
     	ln -s g++ ${DESTDIR}/usr/bin/cxx
-    	cd $BUILDDIR
-    	find ./ -iname "*" -exec strip -s {} \;
+    	cd $DESTDIR
+    	#find ./ -iname "*" -exec strip -s {} \;
+    	
+    	  while read -rd '' file; do
+        case "$(file -Sib "$file")" in
+            application/x-sharedlib\;*)      # Libraries (.so)
+                strip "$file" ;;
+            application/x-executable\;*)     # Binaries
+                strip "$file" ;;
+            application/x-pie-executable\;*) # Relocatable binaries
+                strip "$file" ;;
+        esac
+       
+    done< <(find "./" -type f -iname "*" -print0)
+    	
+    	
+    	
 }
 
 

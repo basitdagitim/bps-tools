@@ -1,0 +1,25 @@
+#!/usr/bin/env bash
+
+find . | grep ympbuild | while read fn; do
+mv "${fn}" "${fn//ympbuild/bpsbuild}";
+done    	
+
+find . | grep bpsbuild | while read fn; do
+
+sed -i "s/'/\"/g" ${fn}
+sed -i "s/.\/configure/..\/\${name}-\${version}\/configure/g" ${fn}
+sed -i "s/make \$jobs/make/g"  ${fn}
+sed -i "s/make install \$jobs/make install DESTDIR=\$DESTDIR/g"  ${fn}
+sed -i "/cd \$name-\$version/d"  ${fn}
+sed -i "/release/d"  ${fn}
+sed -i "/url/d"  ${fn}
+sed -i "/email/d"  ${fn}
+sed -i "/license/d"  ${fn}
+sed -i "/makedepends/d"  ${fn}
+sed -i "/md5sums/d"  ${fn}
+sed -i "/uses/d"  ${fn}
+sed -i "/arch/d"  ${fn}
+sed -i "/maintainer/d"  ${fn}
+
+done    	
+
