@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+name="llvm"
+version="16.0.6"
+description="Low Level Virtual Machine"
+        "https://anduin.linuxfromscratch.org/BLFS/llvm/llvm-third-party.src.tar.xz")
+depends=(libffi xz-utils libxml2 zlib)
+         "b7830bb90e376c90a43c2c190a0a5ffa"
+         "8b506e49e5fa4c41186ba8ba7da5af82")
+group=(sys.devel)
+
+cd llvm-$version.src
+
+export PYTHON=/usr/bin/python3
+
+cmake_args=(
+    -G Ninja
+    -DCMAKE_BUILD_TYPE=Release
+    -DCMAKE_INSTALL_DOCDIR=share/doc
+    -DCMAKE_INSTALL_PREFIX=/usr
+    -DCMAKE_SKIP_RPATH=ON
+    -DLLVM_BINUTILS_INCDIR=/usr/include
+    -DLLVM_BUILD_DOCS=OFF
+    -DLLVM_BUILD_LLVM_DYLIB=ON
+    -DLLVM_BUILD_TESTS=OFF
+    -DLLVM_ENABLE_BINDINGS=OFF
+    -DLLVM_ENABLE_FFI=ON
+    -DLLVM_ENABLE_RTTI=ON
+    -DLLVM_ENABLE_SPHINX=OFF
+    -DLLVM_INCLUDE_BENCHMARKS=OFF
+    -DLLVM_INSTALL_UTILS=ON
+    -DLLVM_LINK_LLVM_DYLIB=ON
+    -DLLVM_USE_PERF=ON
+    -DSPHINX_WARNINGS_AS_ERRORS=OFF
+)
+
+prepare(){
+    mv ../cmake{-$version.src,}
+    mv ../llvm-third-party.src ../third-party
+}
+
+setup(){
+    mkdir build
+    cd build
+    cmake .. ${cmake_args[@]}
+}
+
+build(){
+    cd build
+    ninja ${jobs}
+}
+
+package(){
+    cd build
+    ninja install
+    mv ${DESTDIR}/usr/lib{,64}
+}
+

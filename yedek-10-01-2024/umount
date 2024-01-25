@@ -1,6 +1,0 @@
-#!/bin/sh
-
-for dir in dev dev/pts proc sys ; do
-    while umount -lf -R /home/etapadmin/distro/rootfs/$dir 2>/dev/null ; do true; done
-done
-
