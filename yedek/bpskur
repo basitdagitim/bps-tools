@@ -1,6 +1,26 @@
 #!/bin/sh
 #!/bin/sh
 #set -e
+depens_install()
+{
+source /tmp/bps/kur/bpsbuild
+echo $depends
+IFS=',' read -r -a array <<< "$depends"
+#liste+=("ali")
+#liste+=("veli")
+#array+=("bayram")
+for itempaketname in "${array[@]}"
+do
+echo $paketname
+
+itemindexpaket=$(cat /tmp/index.lst|grep $itempaketname)
+if [ -z "${itemindexpaket}" ] #indexpaket boşsa kurulmamış demektir.
+then
+bpskur itempaketname
+fi
+done    	
+}
+
 paket=$1
 paketname="name=\"${paket}\""
 ROOTFS=$2
