@@ -117,23 +117,8 @@ echo '    linux /boot/vmlinuz boot=live net.ifnames=0 biosdevname=0 init=/bin/in
 echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
 echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
 
-echo 'menuentry "Live GNU/Linux 64-bit" --class liveiso  {' >> /tmp/distro/iso/boot/grub/grub.cfg
-echo '    linux /boot/vmlinuz boot=live init=/bin/canli ' >> /tmp/distro/iso/boot/grub/grub.cfg
-echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
-echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
-
 echo 'menuentry "Kur iki Part GNU/Linux 64-bit" --class liveiso  {' >> /tmp/distro/iso/boot/grub/grub.cfg
 echo '    linux /boot/vmlinuz boot=live init=/bin/kur2 ' >> /tmp/distro/iso/boot/grub/grub.cfg
-echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
-echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
-
-echo 'menuentry "Kur-Tek Part GNU/Linux 64-bit" --class liveiso  {' >> /tmp/distro/iso/boot/grub/grub.cfg
-echo '    linux /boot/vmlinuz init=/bin/kur' >> /tmp/distro/iso/boot/grub/grub.cfg
-echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
-echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
-
-echo 'menuentry "Kur UEFI GNU/Linux 64-bit" --class liveiso  {' >> /tmp/distro/iso/boot/grub/grub.cfg
-echo '    linux /boot/vmlinuz init=/bin/kuruefi ' >> /tmp/distro/iso/boot/grub/grub.cfg
 echo '    initrd /boot/initrd.img' >> /tmp/distro/iso/boot/grub/grub.cfg
 echo '}' >> /tmp/distro/iso/boot/grub/grub.cfg
 
