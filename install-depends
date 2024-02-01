@@ -1,0 +1,132 @@
+#!/bin/bash
+#declare -a All_DEPENDS
+BLUE=$'\e[0;34m'
+GREEN=$'\e[0;32m'
+RED=$'\e[0;31m'
+NC=$'\e[0m'
+
+
+bps_find_package_detail()
+{
+paket=$1
+paketname="name=\"${paket}\""
+#echo "$paket"
+indexpaket=$(cat /tmp/index.lst|grep $paketname)
+name=""
+version=""
+depends=""
+if [ -n "${indexpaket}" ]
+then
+	namex=$(echo $indexpaket|cut -d":" -f1)
+	versionx=$(echo $indexpaket|cut -d":" -f2)
+	dependsx=$(echo $indexpaket|cut -d":" -f3)
+	name=${namex:6:-1}
+	version=${versionx:9:-1}
+	depends=${dependsx:9:-1}
+else
+	#echo "***********${paket} Paket Bulunamadı**********"
+	return
+fi
+echo "$name,$version,$depends"
+}
+
+pakage_install()
+{
+IFS=',' read -r -a array <<< $(bps_find_package_detail $1)
+name=${array[0]}
+version=${array[1]}
+depends=${array[@]:2}
+if [ -n "${name}" ]
+then
+
+	echo "********** ${GREEN} ${name}-${version} Paketi Kuruluyor  ${NC} **********"
+
+else
+	echo "***********${RED} ${1}  Paket Bulunamadı ${NC} **********"
+	return
+fi
+
+#echo "********** ${depends} depends Kuruluyor **********"
+return
+# paketi indirme
+mkdir -p /tmp/bps/kur
+rm -rf /tmp/bps/kur/*
+busybox wget -O /tmp/bps/kur/${name}-${version}.tar.gz https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps 1>/dev/null 2>/dev/null
+mkdir -p /var/lib/bps
+touch /var/lib/bps/index.lst
+cd /tmp/bps/kur/
+
+# paketi açma
+tar -xf ${name}-${version}.tar.gz
+mkdir -p rootfs
+tar -xf rootfs.tar.xz -C rootfs
+# paketi kurma
+cp -prfv rootfs/* $ROOTFS/ 1>/dev/null 2>/dev/null
+
+#eğer daha kurulmuşsa kayıt siliniyor
+sed -i "/name=\"${name}\"/d" /var/lib/bps/index.lst
+#name version depends /var/bps/index.lst eklenmesi
+echo "name=\"${name}\":"version=\"${version}\":"depends=\"${depends}\"">>/var/lib/bps/index.lst
+#paket içinde gelen paket dosyalarının dosya ve dizin yapısını tutan file index dosyanının /var/bps/ konumuna kopyalanması
+cp file.index /var/lib/bps/${name}-${version}.lst  1>/dev/null 2>/dev/null
+# sistem guncelleniyor
+ldconfig
+echo "********** $name Paketi Kuruldu **********"
+}
+
+
+
+
+
+depens_install_find()
+{
+
+IFS=',' read -r -a array <<< "$1"
+for itempaketname in "${array[@]}"
+do
+paketname="name=\"${itempaketname}\""
+depens_paketname=$(cat /tmp/index.lst|grep $paketname)
+depends=""
+if [ -n "${depens_paketname}" ]
+then
+	dependsx=$(echo $depens_paketname|cut -d":" -f3)
+	depends=${dependsx:9:-1}
+fi
+	
+	#echo "$itempaketname ----> $depends"
+	
+	IFS=',' read -r -a sub_depends <<< "$depends"
+	for subpaketname in "${sub_depends[@]}"
+	do
+	#echo "alt bağımılılıklar $subpaketname"
+	
+		IFS=',' read -r -a sub_dependslist <<< "$All_DEPENDS"
+		if [[ ! $(echo ${sub_dependslist[@]} | fgrep -w $subpaketname) ]]
+		then
+		
+			if [ ${#All_DEPENDS[@]} -eq 0 ]; then
+		    		#echo "The array is empty"
+		    		All_DEPENDS="${itempaketname},${subpaketname}"
+			else
+		    		#echo "The array is not empty"
+		    		All_DEPENDS="${All_DEPENDS},${subpaketname}"
+			fi
+	 	fi
+		
+	depens_install_find $subpaketname
+	done
+	
+done
+#echo $All_DEPENDS
+}
+
+declare -a All_DEPENDS
+depens_install_find "gcc"
+echo "Kurulacak Paketler: $All_DEPENDS"
+IFS=',' read -r -a packagearray <<< $All_DEPENDS
+for itempaketname in "${packagearray[@]}"
+do
+#echo "$itempaketname"
+pakage_install "$itempaketname"
+done
+
