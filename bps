@@ -7,7 +7,6 @@ NC=$'\e[0m'
 
 
 #*******************************bps_create_package***************************************
-
 # paketin indirilmesi ve /tmp/bps/build konumunda derlenmesi için gerekli dizinler hazırlanır.
 initsetup() 
 {
@@ -21,7 +20,10 @@ initsetup()
 	
 	if [ -n "${source}" ]
 	then
-		curl -Lk -o ${source}
+		basedosya=$(basename $source)
+		
+		#curl -Lk -o $basedosya ${source}
+		busybox wget -O $basedosya ${source} 1>/dev/null 2>/dev/null
 		dowloadfile=$(ls|head -1)
 		filetype=$(file -b --extension $dowloadfile|cut -d'/' -f1)
 		
@@ -70,11 +72,8 @@ tar -cvzf paket-${name}-${version}.tar.gz rootfs.tar.xz file.index bpsbuild
 cp paket-${name}-${version}.tar.gz ${dizin}/${paket}/${name}-${version}.bps
 }
 
-
 bps_create_package()
 {
-echo "Paketlenecek Paket: $1"
-set -e
 paket=$1
 dizin=$(pwd)
 if [ ! -d ${paket} ]; then echo "Bir paket değil!"; exit; fi
@@ -84,9 +83,9 @@ source ${paket}/bpsbuild
 DESTDIR=/tmp/bps/build/rootfs-${name}-${version}
 SOURCEDIR=/tmp/bps/build/${name}-${version}
 BUILDDIR=/tmp/bps/build/build-${name}-${version}
-
 # fonksiyonlar aşağıdaki sırayla çalışacaktır.
 echo "******************** initsetup ******************"; initsetup #bu dosya içindeki fonksiyon
+
 echo "******************** setup **********************"; setup #bpsbuild dosyasından gelen fonksiyon
 echo "******************** build **********************"; build #bpsbuild dosyasından gelen fonksiyon
 echo "******************** package ********************"; package #bpsbuild dosyasından gelen fonksiyon
@@ -151,23 +150,25 @@ fi
 mkdir -p /tmp/bps/kur
 rm -rf /tmp/bps/kur/*
 busybox wget -O /tmp/bps/kur/${name}-${version}.tar.gz https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps 1>/dev/null 2>/dev/null
-mkdir -p /var/lib/bps
-touch /var/lib/bps/index.lst
-cd /tmp/bps/kur/
+
+busybox mkdir -p /var/lib/bps
+busybox touch /var/lib/bps/index.lst
+#busybox cd /tmp/bps/kur/
 
 # paketi açma
-tar -xf ${name}-${version}.tar.gz
-mkdir -p rootfs
-tar -xf rootfs.tar.xz -C rootfs
+busybox tar -xf /tmp/bps/kur/${name}-${version}.tar.gz -C /tmp/bps/kur/
+#busybox mkdir -p rootfs
+busybox tar -xf /tmp/bps/kur/rootfs.tar.xz -C /
+
 # paketi kurma
-cp -prfv rootfs/* $ROOTFS/ 1>/dev/null 2>/dev/null
+#busybox cp -prfv rootfs/* $ROOTFS/ 1>/dev/null 2>/dev/null
 
 #eğer daha kurulmuşsa kayıt siliniyor
-sed -i "/name=\"${name}\"/d" /var/lib/bps/index.lst
+busybox sed -i "/name=\"${paket}\"/d" /var/lib/bps/index.lst
 #name version depends /var/bps/index.lst eklenmesi
 echo "name=\"${name}\":"version=\"${version}\":"depends=\"${depends}\"">>/var/lib/bps/index.lst
 #paket içinde gelen paket dosyalarının dosya ve dizin yapısını tutan file index dosyanının /var/bps/ konumuna kopyalanması
-cp file.index /var/lib/bps/${name}-${version}.lst  1>/dev/null 2>/dev/null
+busybox cp /tmp/bps/kur/file.index /var/lib/bps/${name}-${version}.lst
 # sistem guncelleniyor
 ldconfig
 echo "********** $name Paketi Kuruldu **********"
@@ -183,6 +184,7 @@ depens_install_find()
 IFS=',' read -r -a array <<< "$1"
 for itempaketname in "${array[@]}"
 do
+
 paketname="name=\"${itempaketname}\""
 depens_paketname=$(cat /tmp/index.lst|grep $paketname)
 depends=""
@@ -200,7 +202,7 @@ fi
 	#echo "alt bağımılılıklar $subpaketname"
 	
 		IFS=',' read -r -a sub_dependslist <<< "$INSTALL_DEPENDS"
-		if [[ ! $(echo ${sub_dependslist[@]} | fgrep -w $subpaketname) ]]
+		if [[ ! $(echo ${sub_dependslist[@]} | grep -F $subpaketname) ]]
 		then
 		
 			if [ ${#INSTALL_DEPENDS[@]} -eq 0 ]; then
@@ -299,7 +301,7 @@ fi
 					sub_depends=${sub_dependsx:9:-1}
 				fi
 				IFS=',' read -r -a sub_sub_depends <<< "$sub_depends"
-				if [[  $(echo ${sub_sub_depends[@]} | fgrep -w ${subpaketname1}) ]]
+				if [[  $(echo ${sub_sub_depends[@]} | grep -F ${subpaketname1}) ]]
 				then
 					found="1"
 				fi
@@ -329,11 +331,14 @@ done
 
 
 #*********************************bps_install*****************************************
+
 bps_install()
 {
-declare -a INSTALL_DEPENDS
+INSTALL_DEPENDS=""
+INSTALL_DEPENDS="${1}" #ilk paket kendisi
 depens_install_find "$1"
 echo "Kurulacak Paketler: $INSTALL_DEPENDS"
+
 IFS=',' read -r -a packagearray <<< $INSTALL_DEPENDS
 for itempaketname in "${packagearray[@]}"
 do
@@ -351,15 +356,16 @@ echo "Tekrar Kurulacak Paket: $1"
 # ******************************bps_remove*******************************************
 bps_remove()
 {
-declare -a REMOVE_DEPENDS
-depens_remove_find "$1"
-echo "Kaldırılacak Paketler: $REMOVE_DEPENDS"
-IFS=',' read -r -a packagearray <<< $REMOVE_DEPENDS
-for itempaketname in "${packagearray[@]}"
-do
+#declare -a REMOVE_DEPENDS
+#depens_remove_find "$1"
+#echo "Kaldırılacak Paketler: $REMOVE_DEPENDS"
+#IFS=',' read -r -a packagearray <<< $REMOVE_DEPENDS
+#for itempaketname in "${packagearray[@]}"
+#do
 #echo "$itempaketname"
-pakage_remove "$itempaketname"
-done
+#pakage_remove "$itempaketname"
+#done
+pakage_remove "$1"
 }
 
 #************************************bps_help************************************************
