@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-set -e
+#set -ex
 paket=$1
 dizin=$(pwd)
 if [ ! -d ${paket} ]; then echo "Bir paket değil!"; exit; fi
@@ -23,7 +23,9 @@ initsetup()
 	
 	if [ -n "${source}" ]
 	then
-		curl -Lk -o ${source}
+		basedosya=$(basename $source)
+		
+		curl -Lk -o $basedosya ${source}
 		dowloadfile=$(ls|head -1)
 		filetype=$(file -b --extension $dowloadfile|cut -d'/' -f1)
 		
