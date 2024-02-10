@@ -76,9 +76,49 @@ echo "********** $name Paketi Kuruldu **********"
 
 
 
-
-
 depens_install_find()
+{
+
+IFS=',' read -r -a array <<< "$1"
+for itempaketname in "${array[@]}"
+do
+paketname="name=\"${itempaketname}\""
+depens_paketname=$(cat /tmp/index.lst|grep $paketname)
+depends=""
+if [ -n "${depens_paketname}" ]
+then
+	dependsx=$(echo $depens_paketname|cut -d":" -f3)
+	depends=${dependsx:9:-1}
+fi
+	
+	#echo "$itempaketname ----> $depends"
+	
+	IFS=',' read -r -a sub_depends <<< "$depends"
+	for subpaketname in "${sub_depends[@]}"
+	do
+	#echo "alt bağımılılıklar $subpaketname"
+	
+		IFS=',' read -r -a sub_dependslist <<< "$INSTALL_DEPENDS"
+		if [[ ! $(echo ${sub_dependslist[@]} | fgrep -w $subpaketname) ]]
+		then
+		
+			if [ ${#All_DEPENDS[@]} -eq 0 ]; then
+		    		#echo "The array is empty"
+		    		INSTALL_DEPENDS="${itempaketname},${subpaketname}"
+			else
+		    		#echo "The array is not empty"
+		    		INSTALL_DEPENDS="${INSTALL_DEPENDS},${subpaketname}"
+			fi
+	 	fi
+		
+	depens_install_find $subpaketname
+	done
+	
+done
+#echo $INSTALL_DEPENDS
+}
+
+depens_remove_find()
 {
 
 IFS=',' read -r -a array <<< "$1"
@@ -97,23 +137,49 @@ fi
 	
 	IFS=',' read -r -a sub_depends1 <<< "$depends"
 	IFS=',' read -r -a sub_depends2 <<< "$depends"
+	
+
 	for subpaketname1 in "${sub_depends1[@]}"
 	do
-	#echo "$subpaketname1 ******************************************************"
 	found="0"
+	#****************************************************************************
+	sayi=$(cat /tmp/index.lst|grep $subpaketname1|wc -l)
+	declare -a INSTALL_DEPENDS=""
+	depens_install_find "${subpaketname1}"
+	echo "$sayi--${subpaketname1} Kurulacak Paketler:****************************: $INSTALL_DEPENDS"
+	if [[ $sayi == 1 ]]
+	then
+	
+	echo "Başka Paketlere Bağımlı Değil..........................."
+	found="2"
+	#continue
+	fi
+	if [[ $sayi == 2 ]]
+	then
+	
+	echo "Başka Paketlere Bağımlı Değil..........................."
+	found="2"
+	#continue
+	fi
+	#****************************************************************************
+	
 		for subpaketname2 in "${sub_depends2[@]}"
 		do
+			if [[ $found == "2" ]]
+			then
+			
+				continue
+			fi
+			#********************************************************************************
 			if [ "${subpaketname1}" != "${subpaketname2}" ]
 			then
-				sub_paketname="name=\"${subpaketname2}\""
-				sub_depens_paketname=$(cat /tmp/index.lst|grep $sub_paketname)
-				sub_depends=""
-				if [ -n "${depens_paketname}" ]
-				then
-					sub_dependsx=$(echo $sub_depens_paketname|cut -d":" -f3)
-					sub_depends=${sub_dependsx:9:-1}
-				fi
-				IFS=',' read -r -a sub_sub_depends <<< "$sub_depends"
+				#****************************************************************************
+				declare -a INSTALL_DEPENDS=""
+				depens_install_find "${subpaketname2}"
+				echo "${subpaketname2} Kurulacak Paketler: $INSTALL_DEPENDS"
+				#****************************************************************************
+				
+				IFS=',' read -r -a sub_sub_depends <<< "$INSTALL_DEPENDS"
 				if [[  $(echo ${sub_sub_depends[@]} | fgrep -w ${subpaketname1}) ]]
 				then
 					found="1"
@@ -123,29 +189,29 @@ fi
 			
 			fi
 		done
-		if [ "${found}" == "0" ]
+		if [[ "${found}" == "0" ]] || [[ "${found}" == "2" ]]
 		then
 			#echo "silinecek....... $subpaketname1"
 			echo "kurulum paket bağımlılıkları son kontrol edilecek"
-			if [ ${#All_DEPENDS[@]} -eq 0 ]; then
+			if [ ${#REMOVE_DEPENDS[@]} -eq 0 ]; then
 		    		#echo "The array is empty"
-		    		All_DEPENDS="${itempaketname},${subpaketname1}"
+		    		REMOVE_DEPENDS="${itempaketname},${subpaketname1}"
 			else
 		    		#echo "The array is not empty"
-		    		All_DEPENDS="${All_DEPENDS},${subpaketname1}"
+		    		REMOVE_DEPENDS="${REMOVE_DEPENDS},${subpaketname1}"
 			fi
 		fi
 		
 	done
 	
 done
-#echo $All_DEPENDS
+#echo $REMOVE_DEPENDS
 }
 
-declare -a All_DEPENDS
-depens_install_find "gcc"
-echo "Kaldırılacak Paketler: $All_DEPENDS"
-IFS=',' read -r -a packagearray <<< $All_DEPENDS
+declare -a REMOVE_DEPENDS
+depens_remove_find "gcc"
+echo "Kaldırılacak Paketler: $REMOVE_DEPENDS"
+IFS=',' read -r -a packagearray <<< $REMOVE_DEPENDS
 for itempaketname in "${packagearray[@]}"
 do
 #echo "$itempaketname"

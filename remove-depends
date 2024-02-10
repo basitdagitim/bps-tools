@@ -30,66 +30,56 @@ fi
 echo "$name,$version,$depends"
 }
 
-pakage_install()
+pakage_remove()
 {
 IFS=',' read -r -a array <<< $(bps_find_package_detail $1)
-name=${array[0]}
+paket=${array[0]} #name
 version=${array[1]}
 depends=${array[@]:2}
-if [ -n "${name}" ]
+if [ -n "${paket}" ]
 then
 
-	echo "********** ${GREEN} ${name}-${version} Paketi Kuruluyor  ${NC} **********"
+	echo "********** ${GREEN} ${paket}-${version} Paketi Kaldırılıyor  ${NC} **********"
 
 else
 	echo "***********${RED} ${1}  Paket Bulunamadı ${NC} **********"
 	return
 fi
+return 
+ 
+# Paketin file.lst dosyası içerisindeki dosyalar, dizinler kaldırılır.
+cat /var/lib/bps/${paket}-${version}.lst | while read dosya ; do
+	if [[ -f "$dosya" ]] ; then 
+		rm -f "$dosya"; 
+	fi
+done
 
-#echo "********** ${depends} depends Kuruluyor **********"
-return
-# paketi indirme
-mkdir -p /tmp/bps/kur
-rm -rf /tmp/bps/kur/*
-busybox wget -O /tmp/bps/kur/${name}-${version}.tar.gz https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps 1>/dev/null 2>/dev/null
-mkdir -p /var/lib/bps
-touch /var/lib/bps/index.lst
-cd /tmp/bps/kur/
+cat /var/lib/bps/${paket}-${version}.lst  | while read dizin ; do
+	if [[ -d "$dizin" ]] ; then
+		rmdir "$dizin" || true
+	fi
+done
 
-# paketi açma
-tar -xf ${name}-${version}.tar.gz
-mkdir -p rootfs
-tar -xf rootfs.tar.xz -C rootfs
-# paketi kurma
-cp -prfv rootfs/* $ROOTFS/ 1>/dev/null 2>/dev/null
 
-#eğer daha kurulmuşsa kayıt siliniyor
-sed -i "/name=\"${name}\"/d" /var/lib/bps/index.lst
-#name version depends /var/bps/index.lst eklenmesi
-echo "name=\"${name}\":"version=\"${version}\":"depends=\"${depends}\"">>/var/lib/bps/index.lst
-#paket içinde gelen paket dosyalarının dosya ve dizin yapısını tutan file index dosyanının /var/bps/ konumuna kopyalanması
-cp file.index /var/lib/bps/${name}-${version}.lst  1>/dev/null 2>/dev/null
+#/var/bps/paket-version.lst dosyasından paket bilgisi kaldırılır.
+rm -f /var/lib/bps/${paket}-${version}.lst
+
+#/var/lib/bps/index.lst dosyasından ilgili paket satırı kaldırılır.
+sed -i "/name=\"${paket}\"/d" /var/lib/bps/index.lst
 # sistem guncelleniyor
 ldconfig
-echo "********** $name Paketi Kuruldu **********"
+
 }
-
-
 
 
 
 depens_remove_find()
 {
 
-paketname="name=\"${1}\""
-satir=$(cat /tmp/index.lst|grep $paketname|wc -l)
-
-if [[ "1" == "${satir}" ]] && [[ "$test_paket" != "$1" ]]
-then
-echo "silinebilir $test_paket"
-return
-fi
-
+IFS=',' read -r -a array <<< "$1"
+for itempaketname in "${array[@]}"
+do
+paketname="name=\"${itempaketname}\""
 depens_paketname=$(cat /tmp/index.lst|grep $paketname)
 depends=""
 if [ -n "${depens_paketname}" ]
@@ -98,28 +88,62 @@ then
 	depends=${dependsx:9:-1}
 fi
 	
-	#echo "$itempaketname ----> $depends"
+	echo "$itempaketname ----> $depends"
 	
-	IFS=',' read -r -a sub_depends <<< "$depends"
-	for subpaketname in "${sub_depends[@]}"
+	IFS=',' read -r -a sub_depends1 <<< "$depends"
+	IFS=',' read -r -a sub_depends2 <<< "$depends"
+	for subpaketname1 in "${sub_depends1[@]}"
 	do
-	echo "alt bağımılılıklar $subpaketname"
-	
+	#echo "$subpaketname1 ******************************************************"
+	found="0"
+		for subpaketname2 in "${sub_depends2[@]}"
+		do
+			if [ "${subpaketname1}" != "${subpaketname2}" ]
+			then
+				sub_paketname="name=\"${subpaketname2}\""
+				sub_depens_paketname=$(cat /tmp/index.lst|grep $sub_paketname)
+				sub_depends=""
+				if [ -n "${depens_paketname}" ]
+				then
+					sub_dependsx=$(echo $sub_depens_paketname|cut -d":" -f3)
+					sub_depends=${sub_dependsx:9:-1}
+				fi
+				IFS=',' read -r -a sub_sub_depends <<< "$sub_depends"
+				if [[  $(echo ${sub_sub_depends[@]} | fgrep -w ${subpaketname1}) ]]
+				then
+					found="1"
+				fi
+				
+				#echo "$subpaketname2---> $sub_depends"
+			
+			fi
+		done
+		if [ "${found}" == "0" ]
+		then
+			#echo "silinecek....... $subpaketname1"
+			#echo "kurulum paket bağımlılıkları son kontrol edilecek"
+			if [ ${#REMOVE_DEPENDS[@]} -eq 0 ]; then
+		    		#echo "The array is empty"
+		    		REMOVE_DEPENDS="${itempaketname},${subpaketname1}"
+			else
+		    		#echo "The array is not empty"
+		    		REMOVE_DEPENDS="${REMOVE_DEPENDS},${subpaketname1}"
+			fi
+		fi
 		
-	#depens_remove_find $subpaketname
 	done
-#echo $All_DEPENDS
+	
+done
+#echo $REMOVE_DEPENDS
 }
 
-
-declare -a All_DEPENDS
-test_paket="gcc"
-depens_remove_find $test_paket
-echo "Kurulacak Paketler: $All_DEPENDS"
-IFS=',' read -r -a packagearray <<< $All_DEPENDS
+declare -a REMOVE_DEPENDS
+depens_remove_find "gcc"
+echo "Kaldırılacak Paketler: $REMOVE_DEPENDS"
+IFS=',' read -r -a packagearray <<< $REMOVE_DEPENDS
 for itempaketname in "${packagearray[@]}"
 do
 #echo "$itempaketname"
-pakage_install "$itempaketname"
+pakage_remove "$itempaketname"
 done
 
