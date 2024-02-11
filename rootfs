@@ -5,7 +5,7 @@ rm -rf $rootfs
 mkdir -p /tmp/distro
 mkdir -p $rootfs/bin
 #export PATH=/bbin:$PATH
-cp ./busyboxtools $rootfs/bin/busybox
+cp ./busybox $rootfs/bin/busybox
 cd $rootfs/bin/
 #busybox --install -s ./
 cd $rootfs/
@@ -35,7 +35,7 @@ chroot $rootfs busybox ash /bin/bbpskur attr / 		#atr sed paketinden önce kurul
 chroot $rootfs busybox ash /bin/bbpskur readline /
 chroot $rootfs busybox ash /bin/bbpskur ncurses /
 chroot $rootfs busybox ash /bin/bbpskur \bash /
-chroot $rootfs busybox ash /bin/bbpskur busybox /
+#chroot $rootfs busybox ash /bin/bbpskur busybox /
 chroot $rootfs busybox ash /bin/bbpskur kmod /
 chroot $rootfs busybox ash /bin/bbpskur eudev /
 chroot $rootfs busybox ash /bin/bbpskur util-linux /

@@ -1,3 +1,0 @@
-#!/bin/sh
-curl -Lk -o /tmp/index.lst https://basitdagitim.github.io/binary-package/index.lst
-
