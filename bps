@@ -11,14 +11,11 @@ NC=$'\e[0m'
 initsetup() 
 {	
 	target="";if [ -n "$1}" ];then target="$1"; else target="/";fi
-	mkdir -p $target/tmp/bps
-	mkdir -p $target/tmp/bps/build
-	cd $target/tmp/bps/build
-	rm -rf ./*
-	rm -rf build-${name}-${version}*
-	rm -rf ${name}-${version}*
-	rm -rf rootfs-${name}-${version}*
-	
+	mkdir -p ${target}tmp/bps
+	mkdir -p ${target}tmp/bps/build
+	cd ${target}tmp/bps/build
+	rm -rf ${target}tmp/bps/build/*
+		
 	if [ -n "${source}" ]
 	then
 		basedosya=$(basename $source)
@@ -87,6 +84,8 @@ source ${paket}/bpsbuild
 DESTDIR=$target/tmp/bps/build/rootfs-${name}-${version}
 SOURCEDIR=$target/tmp/bps/build/${name}-${version}
 BUILDDIR=$target/tmp/bps/build/build-${name}-${version}
+
+
 # fonksiyonlar aşağıdaki sırayla çalışacaktır.
 echo "******************** initsetup ******************"; initsetup $target #bu dosya içindeki fonksiyon
 
@@ -111,10 +110,11 @@ echo "********** ${GREEN} ${name}-${version} Paket Listesi Güncellendi  ${NC} *
 #************************************bps_find_package_detail**************************************
 bps_find_package_detail()
 {
+target="$2"
 paket=$1
 paketname="name=\"${paket}\""
 #echo "$paket"
-indexpaket=$(cat /tmp/index.lst|grep $paketname)
+indexpaket=$(cat $target/tmp/index.lst|grep $paketname)
 name=""
 version=""
 depends=""
@@ -136,7 +136,7 @@ echo "$name,$version,$depends"
 pakage_install()
 {
 target="$2"
-IFS=',' $target/busybox read -r -a array <<< $(bps_find_package_detail $1)
+IFS=',' read -r -a array <<< $(bps_find_package_detail $1 $target)
 name=${array[0]}
 version=${array[1]}
 depends=${array[@]:2}
@@ -185,13 +185,13 @@ echo "********** $name Paketi Kuruldu **********"
 #**********************************depens_install_find****************************************
 depens_install_find()
 {
-
+target="$2"
 IFS=',' read -r -a array <<< "$1"
 for itempaketname in "${array[@]}"
 do
 
 paketname="name=\"${itempaketname}\""
-depens_paketname=$(cat /tmp/index.lst|grep $paketname)
+depens_paketname=$(cat $target/tmp/index.lst|grep $paketname)
 depends=""
 if [ -n "${depens_paketname}" ]
 then
@@ -219,7 +219,7 @@ fi
 			fi
 	 	fi
 		
-	depens_install_find $subpaketname
+	depens_install_find $subpaketname $target
 	done
 	
 done
@@ -229,7 +229,7 @@ done
 pakage_remove()
 {
 target="$2"
-IFS=',' read -r -a array <<< $(bps_find_package_detail $1)
+IFS=',' read -r -a array <<< $(bps_find_package_detail $1 $target)
 paket=${array[0]} #name
 version=${array[1]}
 depends=${array[@]:2}
@@ -275,12 +275,12 @@ echo "********** $name Paketi Kaldırıldı **********"
 #*************************************depens_remove_find*************************************
 depens_remove_find()
 {
-
+target="$2"
 IFS=',' read -r -a array <<< "$1"
 for itempaketname in "${array[@]}"
 do
 paketname="name=\"${itempaketname}\""
-depens_paketname=$(cat /tmp/index.lst|grep $paketname)
+depens_paketname=$(cat $target/tmp/index.lst|grep $paketname)
 depends=""
 if [ -n "${depens_paketname}" ]
 then
@@ -301,7 +301,7 @@ fi
 			if [ "${subpaketname1}" != "${subpaketname2}" ]
 			then
 				sub_paketname="name=\"${subpaketname2}\""
-				sub_depens_paketname=$(cat /tmp/index.lst|grep $sub_paketname)
+				sub_depens_paketname=$(cat $target/tmp/index.lst|grep $sub_paketname)
 				sub_depends=""
 				if [ -n "${depens_paketname}" ]
 				then
