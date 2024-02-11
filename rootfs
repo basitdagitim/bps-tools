@@ -20,6 +20,9 @@ for i in dev dev/pts proc sys; do mount -o bind /$i $rootfs/$i; done
 chroot $rootfs busybox wget -O /tmp/base-file-1.0.bps https://github.com/basitdagitim/binary-package/raw/master/base-file/base-file-1.0.bps 1>/dev/null 2>dev/null
 chroot $rootfs busybox tar -xf /tmp/base-file-1.0.bps -C /tmp/bps/kur
 chroot $rootfs busybox tar -xf /tmp/bps/kur/rootfs.tar.xz -C /
+#paket adresi ekleniyor
+chroot $rootfs busybox mkdir -p /etc/bps
+echo "https://github.com/basitdagitim/binary-package/">$rootfs/etc/bps/sources.list
 
 ### installing bps package in rootfs
 chroot $rootfs busybox ash /bin/bbpsupdate

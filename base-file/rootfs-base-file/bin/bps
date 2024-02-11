@@ -21,7 +21,8 @@ initsetup()
 		basedosya=$(basename $source)
 		
 		#curl -Lk -o $basedosya ${source}
-		$target/bin/busybox wget -O $basedosya ${source} 1>$target/dev/null 2>$target/dev/null
+		$target/bin/busybox wget -O $basedosya ${source}
+		# 1>$target/dev/null 2>$target/dev/null
 		dowloadfile=$(ls|head -1)
 		filetype=$(file -b --extension $dowloadfile|cut -d'/' -f1)
 		
@@ -103,7 +104,19 @@ bps_update()
 target=""
 if [ -n "${1}" ];then target="$1"; else target="/";fi
 echo "********** ${RED} ${name}-${version} Paket Listesi Güncelleniyor  ${NC} **********"
-busybox wget -O $target/tmp/index.lst https://basitdagitim.github.io/binary-package/index.lst 1>$target/dev/null 2>$target/dev/null
+mkdir -p $target/etc/bps
+rm -rf $target/tmp/index.lst
+while IFS= read -r adres
+do
+busybox wget -O $target/tmp/temp.lst ${adres}index.lst 1>$target/dev/null 2>$target/dev/null
+	while IFS= read -r liste
+	do
+		echo "${liste}|${adres}">>$target/tmp/index.lst
+	done < $target/tmp/temp.lst
+done < $target/etc/bps/sources.list
+    
+#busybox wget -O $target/tmp/index.lst https://basitdagitim.github.io/binary-package/index.lst 1>$target/dev/null 2>$target/dev/null
+
 echo "********** ${GREEN} ${name}-${version} Paket Listesi Güncellendi  ${NC} **********"
 }
 
@@ -120,9 +133,11 @@ version=""
 depends=""
 if [ -n "${indexpaket}" ]
 then
-	namex=$(echo $indexpaket|cut -d":" -f1)
-	versionx=$(echo $indexpaket|cut -d":" -f2)
-	dependsx=$(echo $indexpaket|cut -d":" -f3)
+	namex=$(echo $indexpaket|cut -d"|" -f1)
+	versionx=$(echo $indexpaket|cut -d"|" -f2)
+	dependsx=$(echo $indexpaket|cut -d"|" -f3)
+	address=$(echo $indexpaket|cut -d"|" -f4)
+	
 	name=${namex:6:-1}
 	version=${versionx:9:-1}
 	depends=${dependsx:9:-1}
@@ -130,16 +145,17 @@ else
 	#echo "***********${paket} Paket Bulunamadı**********"
 	return
 fi
-echo "$name,$version,$depends"
+echo "$name|$version|$depends|$address"
 }
 #************************************pakage_install**************************************
 pakage_install()
 {
 target="$2"
-IFS=',' read -r -a array <<< $(bps_find_package_detail $1 $target)
+IFS='|' read -r -a array <<< $(bps_find_package_detail $1 $target)
 name=${array[0]}
 version=${array[1]}
-depends=${array[@]:2}
+depends=${array[2]}
+address=${array[3]}
 if [ -n "${name}" ]
 then
 
@@ -160,7 +176,9 @@ $target/bin/busybox mkdir -p $target/var/lib/bps
 $target/bin/busybox touch $target/var/lib/bps/index.lst
 
 # paketi indirme
-$target/bin/busybox wget -O $target/tmp/bps/kur/${name}-${version}.tar.gz https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps 1>$target/dev/null 2>/dev/null
+$target/bin/busybox wget -O $target/tmp/bps/kur/${name}-${version}.tar.gz "${address}raw/master/${name}/${name}-${version}.bps" 1>$target/dev/null 2>/dev/null
+#https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps
+#echo "adres: ${address}raw/master/${name}/${name}-${version}.bps"
 
 # paketi açma
 $target/bin/busybox tar -xf $target/tmp/bps/kur/${name}-${version}.tar.gz -C $target/tmp/bps/kur/
@@ -229,10 +247,10 @@ done
 pakage_remove()
 {
 target="$2"
-IFS=',' read -r -a array <<< $(bps_find_package_detail $1 $target)
+IFS='|' read -r -a array <<< $(bps_find_package_detail $1 $target)
 paket=${array[0]} #name
 version=${array[1]}
-depends=${array[@]:2}
+depends=${array[2]}
 if [ -n "${paket}" ]
 then
 
