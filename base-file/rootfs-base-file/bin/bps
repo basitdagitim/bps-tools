@@ -334,6 +334,7 @@ done
 
 bps_install()
 {
+
 INSTALL_DEPENDS=""
 INSTALL_DEPENDS="${1}" #ilk paket kendisi
 depens_install_find "$1"
@@ -347,6 +348,61 @@ pakage_install "$itempaketname"
 done
 
 
+}
+
+#*********************************bps_packegeinstall*****************************************
+
+bps_packegeinstall()
+{
+#echo "Kurulacak Dosya: $1 $2"
+packagefile="$1"
+target="$2"
+filepath=$(realpath $packagefile)
+filebasename=$(basename $packagefile)
+
+#echo "dosya konumu: $filepath"
+#echo "dosya adı: $filebasename"
+
+# paket ön hazırlığı
+mkdir -p $target/tmp/bps/kur
+rm -rf $target/tmp/bps/kur/*
+busybox mkdir -p $target/var/lib/bps
+busybox touch $target/var/lib/bps/index.lst
+
+# paket kopyalama
+$target/bin/busybox cp $filepath $target/tmp/bps/kur/
+
+# paketi açma
+$target/bin/busybox tar -xf $target/tmp/bps/kur/$filebasename -C $target/tmp/bps/kur/
+namex=$(cat $target/tmp/bps/kur/bpsbuild|grep "name=\"")
+versionx=$(cat $target/tmp/bps/kur/bpsbuild|grep "version=\"")
+dependsx=$(cat $target/tmp/bps/kur/bpsbuild|grep "depends=\"")
+name=${namex:6:-1}
+version=${versionx:9:-1}
+depends=${dependsx:9:-1}
+
+if [ -n "${name}" ]
+then
+	echo "********** ${GREEN} ${name}-${version} Paketi Kuruluyor  ${NC} **********"
+else
+	echo "***********${RED} ${1}  Paket Bulunamadı ${NC} **********"
+	return
+fi
+# paketi kurma
+$target/bin/busybox tar -xf $target/tmp/bps/kur/rootfs.tar.xz -C $target
+
+#eğer daha kurulmuşsa kayıt siliniyor
+$target/bin/busybox sed -i "/name=\"${paket}\"/d" $target/var/lib/bps/index.lst
+
+#name version depends /var/bps/index.lst eklenmesi
+echo "name=\"${name}\":"version=\"${version}\":"depends=\"${depends}\"">>$target/var/lib/bps/index.lst
+
+#paket içinde gelen paket dosyalarının dosya ve dizin yapısını tutan file index dosyanının /var/bps/ konumuna kopyalanması
+busybox cp $target/tmp/bps/kur/file.index $target/var/lib/bps/${name}-${version}.lst
+
+# sistem guncelleniyor
+$target/sbin/ldconfig -r $target
+echo "********** $name Paketi Kuruldu **********"
 }
 
 bps_reinstall()
@@ -389,6 +445,8 @@ for arg in $@ ; do
         bps_create_package $2
     elif [[ "$arg" == "--install" || "$arg" == "-i" ]] ; then
         bps_install $2
+    elif [[ "$arg" == "--packeinstall" || "$arg" == "-pi" ]] ; then
+        bps_packegeinstall $2 $3
     elif [[ "$arg" == "--remove" || "$arg" == "-r" ]] ; then
         bps_remove $2
     elif [[ "$arg" == "--help" || "$arg" == "-h" ]] ; then

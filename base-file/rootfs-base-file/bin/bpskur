@@ -6,9 +6,7 @@ depens_install()
 source /tmp/bps/kur/bpsbuild
 #echo $depends
 IFS=',' read -r -a array <<< "$depends"
-#liste+=("ali")
-#liste+=("veli")
-#array+=("bayram")
+
 for itempaketname in "${array[@]}"
 do
 depens_paketname="name=\"${itempaketname}\""
