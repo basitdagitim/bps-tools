@@ -17,82 +17,26 @@ bash -c "echo 'nameserver 8.8.8.8' > etc/resolv.conf"
 ### system chroot  bind/mount
 #for i in dev dev/pts proc sys; do mount -o bind /$i $rootfs/$i; done
 ### manuel bps-tools install
-#chroot $rootfs busybox wget -O /tmp/base-file-1.0.bps https://github.com/basitdagitim/binary-package/raw/master/base-file/base-file-1.0.bps 1>/dev/null 2>dev/null
 $rootfs/bin/busybox wget -O $rootfs/tmp/base-file-1.0.bps https://github.com/basitdagitim/binary-package/raw/master/base-file/base-file-1.0.bps 1>$rootfs/dev/null 2>$rootfs/dev/null
-#chroot $rootfs busybox tar -xf /tmp/base-file-1.0.bps -C /tmp/bps/kur
 $rootfs/bin/busybox tar -xf $rootfs/tmp/base-file-1.0.bps -C $rootfs/tmp/bps/kur
-
-#chroot $rootfs busybox tar -xf /tmp/bps/kur/rootfs.tar.xz -C /
 $rootfs/bin/busybox tar -xf $rootfs/tmp/bps/kur/rootfs.tar.xz -C $rootfs
 
 #paket adresi ekleniyor
-#chroot $rootfs busybox mkdir -p /etc/bps
 $rootf/bin/busybox mkdir -p $rootfs/etc/bps
-
 echo "basitdagitim/binary-package">$rootfs/etc/bps/sources.list
 ### installing bps package in rootfs
-#chroot $rootfs busybox ash /bin/bbpsupdate
 $rootfs/bin/bps -u $rootfs
 
-#chroot $rootfs busybox ash /bin/bbpskur glibc /
 $rootfs/bin/bps -i glibc $rootfs
-exit
-chroot $rootfs busybox ash /bin/bbpskur pcre2 / #grep'den önce kurulmalı
-chroot $rootfs busybox ash /bin/bbpskur libselinux / 	#atr sed paketinden önce kurulmalı
-chroot $rootfs busybox ash /bin/bbpskur libsepol / 	#atr sed paketinden önce kurulmalı
-chroot $rootfs busybox ash /bin/bbpskur libsemanage / 	#atr sed paketinden önce kurulmalı
-chroot $rootfs busybox ash /bin/bbpskur mcstrans /	#atr sed paketinden önce kurulmalı
-chroot $rootfs busybox ash /bin/bbpskur attr / 		#atr sed paketinden önce kurulmalı
+for paket in pcre2 libselinux libsepol libsemanage mcstrans attr \
+		readline ncurses \bash kmod eudev util-linux \grep \sed \
+		grub e2fsprogs libarchive xz curl openssl initramfs-tools \gzip \
+		coreutils acl gmp findutils openrc audit pam libcap \
+		zlib zstd libxml2 brotli curl linux-image  live-boot live-config parted dosfstools
+do 
+$rootfs/bin/bps -i $paket $rootfs; 
+done
 
-chroot $rootfs busybox ash /bin/bbpskur readline /
-chroot $rootfs busybox ash /bin/bbpskur ncurses /
-chroot $rootfs busybox ash /bin/bbpskur \bash /
-#chroot $rootfs busybox ash /bin/bbpskur busybox /
-chroot $rootfs busybox ash /bin/bbpskur kmod /
-chroot $rootfs busybox ash /bin/bbpskur eudev /
-chroot $rootfs busybox ash /bin/bbpskur util-linux /
-
-chroot $rootfs busybox ash /bin/bbpskur \grep /
-chroot $rootfs busybox ash /bin/bbpskur \sed /
-
-chroot $rootfs busybox ash /bin/bbpskur base-file /
-chroot $rootfs busybox ash /bin/bbpskur grub /
-chroot $rootfs busybox ash /bin/bbpskur e2fsprogs /
-chroot $rootfs busybox ash /bin/bbpskur libarchive /
-
-chroot $rootfs busybox ash /bin/bbpskur xz /
-
-chroot $rootfs busybox ash /bin/bbpskur curl /
-chroot $rootfs busybox ash /bin/bbpskur openssl /
-chroot $rootfs busybox ash /bin/bbpskur initramfs-tools /
-chroot $rootfs busybox ash /bin/bbpskur \gzip /
-
-
-chroot $rootfs busybox ash /bin/bbpskur coreutils /
-chroot $rootfs busybox ash /bin/bbpskur acl /
-
-chroot $rootfs busybox ash /bin/bbpskur atr /
-chroot $rootfs busybox ash /bin/bbpskur gmp /
-
-
-
-
-chroot $rootfs busybox ash /bin/bbpskur findutils /
-chroot $rootfs busybox ash /bin/bbpskur openrc /
-chroot $rootfs busybox ash /bin/bbpskur audit /
-chroot $rootfs busybox ash /bin/bbpskur pam /
-chroot $rootfs busybox ash /bin/bbpskur libcap /
-
-chroot $rootfs busybox ash /bin/bbpskur zlib /
-chroot $rootfs busybox ash /bin/bbpskur zstd /
-chroot $rootfs busybox ash /bin/bbpskur libxml2 /
-chroot $rootfs busybox ash /bin/bbpskur brotli /
-chroot $rootfs busybox ash /bin/bbpskur linux-image /
-
-chroot $rootfs busybox ash /bin/bbpskur live-boot /
-chroot $rootfs busybox ash /bin/bbpskur live-config /
-chroot $rootfs busybox ash /bin/bbpskur parted /
-chroot $rootfs busybox ash /bin/bbpskur dosfstools /
 
 ### update-initrd
 fname=$(basename $rootfs/boot/config*)
@@ -102,9 +46,7 @@ cp $rootfs/boot/config-$kversion $rootfs/etc/kernel-config
 chroot $rootfs update-initramfs -u -k $kversion
 
 #### system chroot umount
-for dir in dev dev/pts proc sys ; do
-    while umount -lf -R $rootfs/$dir 2>/dev/null ; do true; done
-done
+#for dir in dev dev/pts proc sys ; do    while umount -lf -R $rootfs/$dir 2>/dev/null ; do true; done done
 
 #************************iso *********************************
 mkdir -p /tmp/distro/iso
