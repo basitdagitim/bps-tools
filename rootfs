@@ -33,8 +33,9 @@ echo "basitdagitim/binary-package">$rootfs/etc/bps/sources.list
 ### installing bps package in rootfs
 #chroot $rootfs busybox ash /bin/bbpsupdate
 $rootfs/bin/bps -u $rootfs
-exit
-chroot $rootfs busybox ash /bin/bbpskur glibc /
+
+#chroot $rootfs busybox ash /bin/bbpskur glibc /
+$rootfs/bin/bps -i glibc $rootfs
 exit
 chroot $rootfs busybox ash /bin/bbpskur pcre2 / #grep'den önce kurulmalı
 chroot $rootfs busybox ash /bin/bbpskur libselinux / 	#atr sed paketinden önce kurulmalı

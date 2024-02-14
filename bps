@@ -184,7 +184,7 @@ $target/bin/busybox mkdir -p $target/var/lib/bps
 $target/bin/busybox touch $target/var/lib/bps/index.lst
 
 # paketi indirme
-$target/bin/busybox wget -O $target/tmp/bps/kur/${name}-${version}.tar.gz "${address}raw/master/${name}/${name}-${version}.bps" 1>$target/dev/null 2>/dev/null
+$target/bin/busybox wget -O $target/tmp/bps/kur/${name}-${version}.tar.gz "${address}/${name}/${name}-${version}.bps" 1>$target/dev/null 2>/dev/null
 #https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps
 #echo "adres: ${address}raw/master/${name}/${name}-${version}.bps"
 
@@ -371,7 +371,6 @@ bps_install()
 
 INSTALL_DEPENDS=""
 INSTALL_DEPENDS="${1}" #ilk paket kendisi
-depens_install_find "$1"
 echo "Kurulacak Paketler: $INSTALL_DEPENDS"
 
 IFS=',' read -r -a packagearray <<< $INSTALL_DEPENDS
@@ -490,6 +489,8 @@ for arg in $@ ; do
     elif [[ "$arg" == "--install" || "$arg" == "-i" ]] ; then
 		if [ -n "${3}" ]
 			then
+				echo "deneme"
+				set -ex
 				echo "Paket Kurulum Konumu: $3"; bps_install $2 "$3"
 			else
 				bps_install $2 "/"
