@@ -489,8 +489,6 @@ for arg in $@ ; do
     elif [[ "$arg" == "--install" || "$arg" == "-i" ]] ; then
 		if [ -n "${3}" ]
 			then
-				echo "deneme"
-				set -ex
 				echo "Paket Kurulum Konumu: $3"; bps_install $2 "$3"
 			else
 				bps_install $2 "/"
