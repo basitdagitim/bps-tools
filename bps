@@ -368,16 +368,18 @@ done
 
 bps_install()
 {
-
+paket="$1"
+target="$2"
 INSTALL_DEPENDS=""
-INSTALL_DEPENDS="${1}" #ilk paket kendisi
+INSTALL_DEPENDS="${paket}" #ilk paket kendisi
+depens_install_find "$paket" "$target"
 echo "Kurulacak Paketler: $INSTALL_DEPENDS"
 
 IFS=',' read -r -a packagearray <<< $INSTALL_DEPENDS
 for itempaketname in "${packagearray[@]}"
 do
 #echo "$itempaketname"
-pakage_install "$itempaketname" "$2"
+pakage_install "$itempaketname" "$target"
 done
 
 

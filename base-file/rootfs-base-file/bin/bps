@@ -368,16 +368,18 @@ done
 
 bps_install()
 {
-
+paket="$1"
+target="$2"
 INSTALL_DEPENDS=""
-INSTALL_DEPENDS="${1}" #ilk paket kendisi
+INSTALL_DEPENDS="${paket}" #ilk paket kendisi
+depens_install_find "$paket" "$target"
 echo "Kurulacak Paketler: $INSTALL_DEPENDS"
 
 IFS=',' read -r -a packagearray <<< $INSTALL_DEPENDS
 for itempaketname in "${packagearray[@]}"
 do
 #echo "$itempaketname"
-pakage_install "$itempaketname" "$2"
+pakage_install "$itempaketname" "$target"
 done
 
 
@@ -489,8 +491,6 @@ for arg in $@ ; do
     elif [[ "$arg" == "--install" || "$arg" == "-i" ]] ; then
 		if [ -n "${3}" ]
 			then
-				echo "deneme"
-				set -ex
 				echo "Paket Kurulum Konumu: $3"; bps_install $2 "$3"
 			else
 				bps_install $2 "/"
