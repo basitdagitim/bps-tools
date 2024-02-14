@@ -9,25 +9,33 @@ cp ./busybox $rootfs/bin/busybox
 cd $rootfs/bin/
 #busybox --install -s ./
 cd $rootfs/
-mkdir  var run dev sys proc etc tmp tmp/bps tmp/bps/kur tmp/bps/kur/rootfs
+mkdir  -p var run dev sys proc etc tmp/bps/kur
 bash -c "echo '127.1.1.0 basitdagitim' >> etc/hosts"
 bash -c "echo 'basitdagitim' > etc/hostname"
 bash -c "echo 'nameserver 8.8.8.8' > etc/resolv.conf"
 
 ### system chroot  bind/mount
-for i in dev dev/pts proc sys; do mount -o bind /$i $rootfs/$i; done
+#for i in dev dev/pts proc sys; do mount -o bind /$i $rootfs/$i; done
 ### manuel bps-tools install
-chroot $rootfs busybox wget -O /tmp/base-file-1.0.bps https://github.com/basitdagitim/binary-package/raw/master/base-file/base-file-1.0.bps 1>/dev/null 2>dev/null
-chroot $rootfs busybox tar -xf /tmp/base-file-1.0.bps -C /tmp/bps/kur
-chroot $rootfs busybox tar -xf /tmp/bps/kur/rootfs.tar.xz -C /
+#chroot $rootfs busybox wget -O /tmp/base-file-1.0.bps https://github.com/basitdagitim/binary-package/raw/master/base-file/base-file-1.0.bps 1>/dev/null 2>dev/null
+$rootfs/bin/busybox wget -O $rootfs/tmp/base-file-1.0.bps https://github.com/basitdagitim/binary-package/raw/master/base-file/base-file-1.0.bps 1>$rootfs/dev/null 2>$rootfs/dev/null
+#chroot $rootfs busybox tar -xf /tmp/base-file-1.0.bps -C /tmp/bps/kur
+$rootfs/bin/busybox tar -xf $rootfs/tmp/base-file-1.0.bps -C $rootfs/tmp/bps/kur
+
+#chroot $rootfs busybox tar -xf /tmp/bps/kur/rootfs.tar.xz -C /
+$rootfs/bin/busybox tar -xf $rootfs/tmp/bps/kur/rootfs.tar.xz -C $rootfs
+
 #paket adresi ekleniyor
-chroot $rootfs busybox mkdir -p /etc/bps
-echo "https://github.com/basitdagitim/binary-package/">$rootfs/etc/bps/sources.list
+#chroot $rootfs busybox mkdir -p /etc/bps
+$rootf/bin/busybox mkdir -p $rootfs/etc/bps
 
+echo "basitdagitim/binary-package">$rootfs/etc/bps/sources.list
 ### installing bps package in rootfs
-chroot $rootfs busybox ash /bin/bbpsupdate
+#chroot $rootfs busybox ash /bin/bbpsupdate
+$rootfs/bin/bps -u $rootfs
+exit
 chroot $rootfs busybox ash /bin/bbpskur glibc /
-
+exit
 chroot $rootfs busybox ash /bin/bbpskur pcre2 / #grep'den önce kurulmalı
 chroot $rootfs busybox ash /bin/bbpskur libselinux / 	#atr sed paketinden önce kurulmalı
 chroot $rootfs busybox ash /bin/bbpskur libsepol / 	#atr sed paketinden önce kurulmalı

@@ -101,7 +101,6 @@ echo "*******************packagecompress***************"; packagecompress $targe
 #**************************************bps_update************************************
 bps_update()
 {
-#set -ex
 target=""
 if [ -n "${1}" ];then target="$1"; else target="/";fi
 echo "********** ${RED} ${name}-${version} Paket Listesi Güncelleniyor  ${NC} **********"
@@ -109,17 +108,10 @@ mkdir -p $target/etc/bps
 rm -rf $target/tmp/index.lst
 while IFS= read -r adres
 do
-github_adres=$(echo $adres|cut -d"/" -f1)
-binary_package_adres=$(echo $adres|cut -d"/" -f2)
-echo $github_adres
-echo $binary_package_adres
-
-
-$target/bin/busybox wget -O $target/tmp/temp.lst "https://${github_adres}.github.io/${binary_package_adres}/index.lst" 1>$target/dev/null 2>$target/dev/null
+busybox wget -O $target/tmp/temp.lst ${adres}index.lst 1>$target/dev/null 2>$target/dev/null
 	while IFS= read -r liste
 	do
-		echo "${liste}|https://github.com/${adres}/raw/master/">>$target/tmp/index.lst
-		#https://github.com/basitdagitim/binary-package/blob/master/audit/audit-3.1.1.bps
+		echo "${liste}|${adres}">>$target/tmp/index.lst
 	done < $target/tmp/temp.lst
 done < $target/etc/bps/sources.list
     
