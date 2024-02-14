@@ -111,8 +111,8 @@ while IFS= read -r adres
 do
 github_adres=$(echo $adres|cut -d"/" -f1)
 binary_package_adres=$(echo $adres|cut -d"/" -f2)
-echo $github_adres
-echo $binary_package_adres
+#echo $github_adres
+#echo $binary_package_adres
 
 
 $target/bin/busybox wget -O $target/tmp/temp.lst "https://${github_adres}.github.io/${binary_package_adres}/index.lst" 1>$target/dev/null 2>$target/dev/null
