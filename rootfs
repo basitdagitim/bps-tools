@@ -28,7 +28,7 @@ echo "basitdagitim/binary-package">$rootfs/etc/bps/sources.list
 $rootfs/bin/bps -u $rootfs
 
 $rootfs/bin/bps -i glibc $rootfs
-for paket in pcre2 libselinux libsepol libsemanage mcstrans attr \
+for paket in pcre2 libselinux libsepol libsemanage mcstrans attr busybox \
 		readline ncurses \bash kmod eudev util-linux \grep \sed \
 		grub e2fsprogs libarchive xz curl openssl initramfs-tools \gzip \
 		coreutils acl gmp findutils openrc audit pam libcap \
