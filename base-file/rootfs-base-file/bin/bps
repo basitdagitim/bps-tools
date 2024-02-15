@@ -75,7 +75,7 @@ cp paket-${name}-${version}.tar.gz ${dizin}/${paket}/${name}-${version}.bps
 bps_create_package()
 {
 target="";if [ -n "$2}" ];then target="$2"; else target="/";fi
-if [ ! -f "$target/tmp/index.lst"  ]; then echo "Paket index dosyası bulunamadı!"; bps_update $target/; fi
+#if [ ! -f "$target/tmp/index.lst"  ]; then echo "Paket index dosyası bulunamadı!"; bps_update $target/; fi
 paket=$1
 dizin=$(pwd)
 if [ ! -d ${paket} ]; then echo "Bir paket değil!"; exit; fi
