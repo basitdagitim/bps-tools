@@ -107,6 +107,7 @@ if [ -n "${1}" ];then target="$1"; else target="/";fi
 echo "********** ${RED} ${name}-${version} Paket Listesi Güncelleniyor  ${NC} **********"
 mkdir -p $target/etc/bps
 rm -rf $target/tmp/index.lst
+rm -rf $target/tmp/temp.lst
 while IFS= read -r adres
 do
 github_adres=$(echo $adres|cut -d"/" -f1)
@@ -114,13 +115,14 @@ binary_package_adres=$(echo $adres|cut -d"/" -f2)
 #echo $github_adres
 #echo $binary_package_adres
 
-
 $target/bin/busybox wget -O $target/tmp/temp.lst "https://${github_adres}.github.io/${binary_package_adres}/index.lst" 1>$target/dev/null 2>$target/dev/null
+if [ ! -f "$target/tmp/temp.lst"  ]; then echo "Paket adresleri hatalı /etc/bps/sources.list dosya içeriğini kontrol ediniz!"; continue; fi
+
 	while IFS= read -r liste
 	do
 		echo "${liste}|https://github.com/${adres}/raw/master/">>$target/tmp/index.lst
-		#https://github.com/basitdagitim/binary-package/blob/master/audit/audit-3.1.1.bps
 	done < $target/tmp/temp.lst
+	
 done < $target/etc/bps/sources.list
     
 #busybox wget -O $target/tmp/index.lst https://basitdagitim.github.io/binary-package/index.lst 1>$target/dev/null 2>$target/dev/null
@@ -144,7 +146,8 @@ then
 	namex=$(echo $indexpaket|cut -d"|" -f1)
 	versionx=$(echo $indexpaket|cut -d"|" -f2)
 	dependsx=$(echo $indexpaket|cut -d"|" -f3)
-	address=$(echo $indexpaket|cut -d"|" -f4)
+	filepath=$(echo $indexpaket|cut -d"|" -f4)
+	address=$(echo $indexpaket|cut -d"|" -f5)
 	
 	name=${namex:6:-1}
 	version=${versionx:9:-1}
@@ -153,7 +156,7 @@ else
 	#echo "***********${paket} Paket Bulunamadı**********"
 	return
 fi
-echo "$name|$version|$depends|$address"
+echo "$name|$version|$depends|$filepath|$address"
 }
 #************************************pakage_install**************************************
 pakage_install()
@@ -163,7 +166,8 @@ IFS='|' read -r -a array <<< $(bps_find_package_detail $1 $target)
 name=${array[0]}
 version=${array[1]}
 depends=${array[2]}
-address=${array[3]}
+filepath=${array[3]}
+address=${array[4]}
 if [ -n "${name}" ]
 then
 
@@ -184,9 +188,9 @@ $target/bin/busybox mkdir -p $target/var/lib/bps
 $target/bin/busybox touch $target/var/lib/bps/index.lst
 
 # paketi indirme
-$target/bin/busybox wget -O $target/tmp/bps/kur/${name}-${version}.tar.gz "${address}/${name}/${name}-${version}.bps" 1>$target/dev/null 2>/dev/null
-#https://github.com/basitdagitim/binary-package/raw/master/${name}/${name}-${version}.bps
-#echo "adres: ${address}raw/master/${name}/${name}-${version}.bps"
+#echo "${address}${filepath}/${name}-${version}.bps"
+$target/bin/busybox wget -O $target/tmp/bps/kur/${name}-${version}.tar.gz "${address}${filepath}/${name}-${version}.bps" 1>$target/dev/null 2>/dev/null
+if [ ! -f "$target/tmp/bps/kur/${name}-${version}.tar.gz"  ]; then echo " İndirilen paket hatalı veya indirilememiş!"; exit; fi
 
 # paketi açma
 $target/bin/busybox tar -xf $target/tmp/bps/kur/${name}-${version}.tar.gz -C $target/tmp/bps/kur/
