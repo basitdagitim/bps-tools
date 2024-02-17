@@ -17,13 +17,13 @@ bash -c "echo 'nameserver 8.8.8.8' > etc/resolv.conf"
 ### system chroot  bind/mount
 #for i in dev dev/pts proc sys; do mount -o bind /$i $rootfs/$i; done
 ### manuel bps-tools install
-$rootfs/bin/busybox wget -O $rootfs/tmp/base-file-1.0.bps https://github.com/basitdagitim/binary-package/raw/master/base-file/base-file-1.0.bps 1>$rootfs/dev/null 2>$rootfs/dev/null
+$rootfs/bin/busybox wget -O $rootfs/tmp/base-file-1.0.bps https://github.com/basitdagitim/bps-binary-packages/raw/master/sys/base/base-file/base-file-1.0.bps 1>$rootfs/dev/null 2>$rootfs/dev/null
 $rootfs/bin/busybox tar -xf $rootfs/tmp/base-file-1.0.bps -C $rootfs/tmp/bps/kur
 $rootfs/bin/busybox tar -xf $rootfs/tmp/bps/kur/rootfs.tar.xz -C $rootfs
 
 #paket adresi ekleniyor
 $rootf/bin/busybox mkdir -p $rootfs/etc/bps
-echo "basitdagitim/binary-package">$rootfs/etc/bps/sources.list
+echo "basitdagitim/bps-binary-packages">$rootfs/etc/bps/sources.list
 ### installing bps package in rootfs
 $rootfs/bin/bps -u $rootfs
 
