@@ -178,7 +178,7 @@ else
 	echo "***********${RED} ${1}  Paket Bulunamadı ${NC} **********"
 	return
 fi
-if [[ -f "$target/var/lib/bps/${name}-${version}.lst" &&  "$reinstall" == "0" ]]; then echo "${BLUE} ${name}-${version}  Paketi Önceden Kurulmus! ${NC}"; return; fi
+if [[ -f "$target/var/lib/bps/${name}-${version}.lst" &&  "$reinstall" == "0" ]]; then echo "${BLUE} ${name}-${version}  Paketi Zaten Kurulu ${NC}"; return; fi
 
 #echo "********** ${depends} depends Kuruluyor **********"
 #return
