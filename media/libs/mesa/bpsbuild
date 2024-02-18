@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+name="mesa"
+version="23.1.7"
+description="An open-source implementation of the OpenGL specification"
+source="https://gitlab.freedesktop.org/mesa/mesa/-/archive/mesa-$version/mesa-mesa-$version.tar.gz"
+depends="libva,libvdpau,libdrm,llvm,glslang,elfutils,libclc,py3-mako,libglvnd,eudev"
+group="media.libs"
+
+setup(){
+cd $SOURCEDIR
+    meson setup $BUILDDIR --prefix=/usr \
+        -D b_ndebug=true \
+        -D b_lto=true \
+        -D platforms=x11 \
+        -D gallium-drivers=r300,r600,radeonsi,nouveau,virgl,svga,swrast,i915,iris,crocus,zink,d3d12 \
+        -D vulkan-drivers=amd,intel,intel_hasvk,swrast,virtio-experimental \
+        -D vulkan-layers=device-select,intel-nullhw,overlay \
+        -D dri3=enabled \
+        -D egl=enabled \
+        -D gallium-extra-hud=true \
+        -D gallium-nine=true \
+        -D gallium-opencl=icd \
+        -D gallium-va=enabled \
+        -D gallium-vdpau=enabled \
+        -D gallium-xa=enabled \
+        -D gbm=enabled \
+        -D gles1=disabled \
+        -D gles2=enabled \
+        -D glvnd=true \
+        -D glx=dri \
+        -D llvm=enabled \
+        -D osmesa=true \
+        -D shared-glapi=enabled \
+        -D microsoft-clc=disabled \
+        -D video-codecs=vc1dec,h264dec,h264enc,h265dec,h265enc \
+        -D valgrind=disabled \
+        -D lmsensors=disabled \
+        -Dzstd=false
+
+}
+
+build(){
+    ninja -C $BUILDDIR
+}
+
+package(){
+    DESTDIR=$DESTDIR ninja -C $BUILDDIR install
+}
+

@@ -162,6 +162,7 @@ echo "$name|$version|$depends|$filepath|$address"
 pakage_install()
 {
 target="$2"
+reinstall="$3"
 IFS='|' read -r -a array <<< $(bps_find_package_detail $1 $target)
 name=${array[0]}
 version=${array[1]}
@@ -177,6 +178,7 @@ else
 	echo "***********${RED} ${1}  Paket Bulunamadı ${NC} **********"
 	return
 fi
+if [[ -f "$target/var/lib/bps/${name}-${version}.lst" &&  "$reinstall" == "0" ]]; then echo "${BLUE} ${name}-${version}  Paketi Önceden Kurulmuş! ${NC}"; return; fi
 
 #echo "********** ${depends} depends Kuruluyor **********"
 #return
@@ -215,27 +217,32 @@ echo "********** $name Paketi Kuruldu **********"
 #**********************************depens_install_find****************************************
 depens_install_find()
 {
+durum="0"
 target="$2"
 IFS=',' read -r -a array <<< "$1"
 for itempaketname in "${array[@]}"
 do
 
 paketname="name=\"${itempaketname}\""
-depens_paketname=$(cat $target/tmp/index.lst|grep $paketname)
+depens_paketname=$(/bin/busybox cat "${target}/tmp/index.lst"|grep "${paketname}")
 depends=""
 if [ -n "${depens_paketname}" ]
 then
-	dependsx=$(echo $depens_paketname|cut -d":" -f3)
+	dependsx=$(echo $depens_paketname|cut -d"|" -f3)
 	depends=${dependsx:9:-1}
+	if [ ! -n "${depends}" ]; then
+	# echo "Bağımlılık Yok..:-$itempaketname-"; 
+	durum="1"; 
+	fi
 fi
-	
+	if [ "${durum}" == "1" ]; then return; fi 
 	#echo "$itempaketname ----> $depends"
 	
 	IFS=',' read -r -a sub_depends <<< "$depends"
 	for subpaketname in "${sub_depends[@]}"
 	do
-	#echo "alt bağımılılıklar $subpaketname"
-	
+	#echo "alt bağımılılıklar $subpaketname  $target"
+	#continue
 		IFS=',' read -r -a sub_dependslist <<< "$INSTALL_DEPENDS"
 		if [[ ! $(echo ${sub_dependslist[@]} | grep -F $subpaketname) ]]
 		then
@@ -249,7 +256,7 @@ fi
 			fi
 	 	fi
 		
-	depens_install_find $subpaketname $target
+	depens_install_find "$subpaketname" "$target"
 	done
 	
 done
@@ -374,6 +381,8 @@ bps_install()
 {
 paket="$1"
 target="$2"
+reinstall="$3"
+#reinstall=1 install/reinstall=0 no install
 INSTALL_DEPENDS=""
 INSTALL_DEPENDS="${paket}" #ilk paket kendisi
 depens_install_find "$paket" "$target"
@@ -383,7 +392,8 @@ IFS=',' read -r -a packagearray <<< $INSTALL_DEPENDS
 for itempaketname in "${packagearray[@]}"
 do
 #echo "$itempaketname"
-pakage_install "$itempaketname" "$target"
+#continue
+pakage_install "$itempaketname" "$target" "$reinstall"
 done
 
 
@@ -444,24 +454,6 @@ $target/sbin/ldconfig -r $target
 echo "********** $name Paketi Kuruldu **********"
 }
 
-bps_reinstall()
-{
-echo "Tekrar Kurulacak Paket: $1"
-}
-# ******************************bps_remove*******************************************
-bps_remove()
-{
-#declare -a REMOVE_DEPENDS
-#depens_remove_find "$1"
-#echo "Kaldırılacak Paketler: $REMOVE_DEPENDS"
-#IFS=',' read -r -a packagearray <<< $REMOVE_DEPENDS
-#for itempaketname in "${packagearray[@]}"
-#do
-#echo "$itempaketname"
-#pakage_remove "$itempaketname" "$2"
-#done
-pakage_remove "$1" "$2"
-}
 
 #************************************bps_help************************************************
 bps_help()
@@ -470,6 +462,7 @@ bps_help()
      echo " -u,  --update		: package index update.	use: bps -u	"
      echo " -c,  --create		: create bps package.	use: bps -c	packagedirectory target(default=/)"
      echo " -i,  --install		: package install.	use: bps -i	packagename target(default=/)"
+     echo " -ri,  --reinstall		: package install.	use: bps -ri	packagename target(default=/)"
      echo " -pi	          	: packagefile install.	use: bps -pi	packagefile target"
      echo " -r,  --remove 		: package remove.	use: bps -r	packagename  target(default=/)"
      echo " -h,  --help   		: bps help"
@@ -495,10 +488,18 @@ for arg in $@ ; do
     elif [[ "$arg" == "--install" || "$arg" == "-i" ]] ; then
 		if [ -n "${3}" ]
 			then
-				echo "Paket Kurulum Konumu: $3"; bps_install $2 "$3"
+				echo "Paket Kurulum Konumu: $3"; bps_install $2 "$3" "0"
 			else
-				bps_install $2 "/"
+				bps_install $2 "/" "0"
 		fi
+    elif [[ "$arg" == "--reinstall" || "$arg" == "-ri" ]] ; then
+		if [ -n "${3}" ]
+			then
+				echo "Paket Kurulum Konumu: $3"; pakage_install $2 "$3" "1"
+			else
+				pakage_install $2 "/" "1"
+		fi
+ 
     elif [[ "$arg" == "--packeinstall" || "$arg" == "-pi" ]] ; then
         bps_packegefileinstall $2 $3
     elif [[ "$arg" == "--remove" || "$arg" == "-r" ]] ; then
