@@ -15,7 +15,7 @@ build()
 }
 package()
 {
-	cp -prfv $dizin/$name/rootfs-base-file/*  ${DESTDIR}/
+	cp -prfv $dizin/$name/basefiles/*  ${DESTDIR}/
 }
 
 
